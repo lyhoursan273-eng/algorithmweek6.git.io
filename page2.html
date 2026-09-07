@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Algorithm III Week 6 - 60 Question Interactive Practice Lab</title>
+<style>
+:root{
+  --bg:#f5f7fb;--panel:#fff;--text:#172033;--muted:#697386;--border:#d8deea;
+  --accent:#3157d5;--accent-soft:#eaf0ff;--amber:#e99a16;--amber-soft:#fff5dc;
+  --green:#12875a;--green-soft:#e8f7f0;--red:#cf4242;--red-soft:#fdecec;
+  --purple:#7055c5;--purple-soft:#f1edfc;--shadow:0 14px 38px rgba(24,39,75,.08)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,select{font:inherit}
+button{cursor:pointer}
+.shell{max-width:1280px;margin:0 auto;padding:18px}
+.header{display:grid;grid-template-columns:minmax(220px,1fr) minmax(260px,2fr) auto;gap:14px;align-items:center;margin-bottom:12px}
+.brand strong{display:block;font-size:15px}.brand span{color:var(--muted);font-size:13px}
+.progressTrack{height:10px;background:#e6eaf2;border-radius:999px;overflow:hidden}.progressBar{height:100%;background:var(--accent);width:0;transition:width .3s ease}
+.headerStats{display:flex;gap:12px;align-items:center;justify-content:flex-end;font-size:13px;color:var(--muted)}
+.speed{display:flex;align-items:center;gap:7px}.speed select{border:1px solid var(--border);border-radius:10px;padding:7px 9px;background:#fff;color:var(--text)}
+.stageMap{display:grid;grid-template-columns:repeat(12,minmax(50px,1fr));gap:7px;margin:10px 0 14px}
+.stageDot{border:1px solid var(--border);border-radius:10px;padding:7px 5px;background:#fff;text-align:center;font-size:11px;color:var(--muted);min-height:48px}
+.stageDot strong{display:block;color:var(--text);font-size:12px}.stageDot.current{border-color:var(--accent);background:var(--accent-soft)}.stageDot.done{border-color:var(--green);background:var(--green-soft)}.stageDot.locked{opacity:.48}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow);padding:clamp(18px,3vw,34px)}
+.topline{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.eyebrow{text-transform:uppercase;letter-spacing:.11em;color:var(--accent);font-size:12px;font-weight:900}.qcount{font-size:13px;color:var(--muted);font-weight:700}
+h1{font-size:clamp(30px,4vw,46px);line-height:1.06;margin:8px 0 10px}.prompt{font-size:clamp(20px,2.4vw,30px);line-height:1.2;font-weight:850;margin:18px 0 14px}.sub{color:var(--muted);font-size:16px;max-width:920px;line-height:1.55}
+.workspace{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:18px;margin-top:18px}.visual,.questionPane{border:1px solid var(--border);border-radius:18px;background:#fbfcff;padding:18px;min-width:0}.questionPane{background:#fff}.visualTitle,.paneTitle{font-size:13px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+.stage{min-height:290px;overflow:auto;display:flex;align-items:center;justify-content:center;padding:18px;border-radius:14px;background:linear-gradient(180deg,#fbfcff,#f6f8fc);border:1px solid #e7eaf1}.stack{width:100%}.arrayRow,.listRow{display:flex;align-items:center;gap:9px;min-width:max-content;justify-content:center}.arrayWrap,.listWrap{overflow:auto;width:100%;padding:8px 2px}.cell{width:82px;height:82px;border:2px solid #748197;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;position:relative;transition:transform .45s ease,background .45s ease,border-color .45s ease,opacity .45s ease}.cell .v{font-size:25px;font-weight:900}.cell .i{position:absolute;bottom:5px;font-size:11px;color:var(--muted)}.cell.empty{background:#f1f3f7;color:#a0a8b8}.cell.hot{background:var(--amber-soft);border-color:var(--amber);transform:translateY(-9px)}.cell.good{background:var(--green-soft);border-color:var(--green)}.cell.bad{background:var(--red-soft);border-color:var(--red)}.cell.stale{border-style:dashed;color:#9aa3b2;background:#f1f3f6}
+.node{display:grid;grid-template-columns:70px 38px;border:2px solid #6f7d93;border-radius:13px;background:#fff;overflow:hidden;transition:transform .45s ease,background .45s ease,border-color .45s ease,opacity .45s ease}.node .value{font-size:24px;font-weight:900;padding:16px 7px;text-align:center}.node .next{border-left:2px solid #6f7d93;display:flex;align-items:center;justify-content:center;font-size:18px}.node.hot{background:var(--amber-soft);border-color:var(--amber);transform:translateY(-8px)}.node.good{background:var(--green-soft);border-color:var(--green)}.node.bad{background:var(--red-soft);border-color:var(--red)}.node.dead{opacity:.35;background:var(--red-soft);border-color:var(--red)}.arrow{font-size:30px;color:#68758b;transition:color .4s ease,transform .4s ease}.arrow.hot{color:var(--amber);transform:scale(1.15)}.ptr{font-size:11px;font-weight:900;color:var(--accent);text-align:center;min-height:16px;margin-bottom:3px}.floating{margin-top:24px;display:flex;justify-content:center;gap:10px;align-items:center}.floatLabel{font-size:12px;color:var(--red);font-weight:900}
+.memoryGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%}.memoryBlock{border:2px solid var(--border);border-radius:14px;padding:14px;background:#fff}.memoryBlock h4{margin:0 0 9px}.memoryBlock.hot{border-color:var(--amber);background:var(--amber-soft)}.memoryBlock.good{border-color:var(--green);background:var(--green-soft)}.memoryBlock.bad{border-color:var(--red);background:var(--red-soft)}
+.code{background:#111827;color:#e9effa;border-radius:14px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;line-height:1.65;overflow:auto;white-space:pre}.codeLine{display:block;padding:1px 5px;border-radius:6px}.codeLine.active{background:#2c3b61;color:#fff}.codeLine.bad{background:#6b2730}.codeLine.good{background:#194d3a}
+.options{display:grid;gap:9px;margin-top:14px}.option{border:2px solid var(--border);border-radius:13px;padding:12px 14px;background:#fff;color:var(--text);font-weight:750;text-align:left;min-height:48px}.option:hover{border-color:#9eabc1}.option.correct{border-color:var(--green);background:var(--green-soft)}.option.wrong{border-color:var(--red);background:var(--red-soft)}.option:disabled{cursor:not-allowed;opacity:.72}.feedback{margin-top:14px;border-radius:13px;padding:13px 14px;background:#f3f5f9;border:1px solid var(--border);min-height:64px;line-height:1.45}.feedback.good{background:var(--green-soft);border-color:#b9e7d2}.feedback.bad{background:var(--red-soft);border-color:#efbfc2}.feedback.hint{background:var(--amber-soft);border-color:#f1d28f}.feedback strong{display:block;margin-bottom:3px}.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}.btn{border:1px solid var(--border);border-radius:11px;padding:10px 14px;background:#fff;color:var(--text);font-weight:800;min-height:44px}.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.green{background:var(--green);border-color:var(--green);color:#fff}.btn:disabled{opacity:.45;cursor:not-allowed}.mini{font-size:12px;color:var(--muted);margin-top:9px}.counterChips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.chip{border-radius:999px;padding:6px 9px;background:#eef1f7;color:#505c70;font-size:12px;font-weight:800}.chip.good{background:var(--green-soft);color:var(--green)}.chip.warn{background:var(--amber-soft);color:#946000}.chip.bad{background:var(--red-soft);color:var(--red)}
+.compareGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}.compareCard{border:1px solid var(--border);border-radius:14px;padding:14px;background:#fff;text-align:center}.compareCard h4{margin:0 0 10px}.metric{font-size:13px;font-weight:900;margin-top:10px}.summary{display:none}.summary.active{display:block}.summaryGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.summaryStat{border:1px solid var(--border);border-radius:16px;padding:17px;background:#fff;text-align:center}.summaryStat strong{display:block;font-size:34px;color:var(--accent)}.takeaways{display:grid;gap:9px}.takeaway{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:11px;padding:11px 13px}
+@media(max-width:920px){.workspace{grid-template-columns:1fr}.stageMap{grid-template-columns:repeat(6,1fr)}.header{grid-template-columns:1fr auto}.progressTrack{grid-column:1/-1;grid-row:2}.summaryGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.stageMap{grid-template-columns:repeat(4,1fr)}.memoryGrid,.compareGrid{grid-template-columns:1fr}.headerStats{flex-direction:column;align-items:flex-end}.cell{width:68px;height:72px}.node{grid-template-columns:60px 34px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="header">
+    <div class="brand"><strong>ALGORITHM III · WEEK 6 PRACTICE LAB</strong><span>Dynamic Array → Singly Linked List</span></div>
+    <div class="progressTrack" aria-label="Overall progress"><div id="progressBar" class="progressBar"></div></div>
+    <div class="headerStats">
+      <span id="overallText">Question 1 / 60</span>
+      <span id="attemptText">Mistakes: 0</span>
+      <label class="speed">Animation
+        <select id="speedSelect" aria-label="Animation speed">
+          <option value="slow" selected>Slow</option>
+          <option value="normal">Normal</option>
+          <option value="fast">Fast</option>
+        </select>
+      </label>
+    </div>
+  </div>
+  <div id="stageMap" class="stageMap" aria-label="Stage progress"></div>
+
+  <main id="practiceCard" class="card">
+    <div class="topline">
+      <div>
+        <div id="eyebrow" class="eyebrow"></div>
+        <h1 id="stageTitle"></h1>
+      </div>
+      <div id="qCount" class="qcount"></div>
+    </div>
+    <p id="stageDesc" class="sub"></p>
+    <div id="prompt" class="prompt"></div>
+
+    <div class="workspace">
+      <section class="visual">
+        <div class="visualTitle">Live visual evidence</div>
+        <div id="visualStage" class="stage" aria-live="polite"></div>
+        <div id="visualNote" class="mini">Choose an answer to test your mental model.</div>
+        <div class="actions">
+          <button id="replayBtn" class="btn" type="button" disabled>Replay visual</button>
+          <button id="resetQBtn" class="btn" type="button">Reset question</button>
+        </div>
+      </section>
+      <section class="questionPane">
+        <div class="paneTitle">Your decision</div>
+        <div id="codeBox"></div>
+        <div id="options" class="options"></div>
+        <div id="feedback" class="feedback" aria-live="polite">Answer first. The animation will either stop at evidence that challenges you or continue to the result.</div>
+        <div id="chips" class="counterChips"></div>
+        <div class="actions">
+          <button id="nextBtn" class="btn primary" type="button" disabled>Next question →</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <section id="summary" class="card summary">
+    <div class="eyebrow">Practice complete</div>
+    <h1>60 Decisions, One Mental Model</h1>
+    <p class="sub">You moved from array mechanics to linked-list representation, pointer safety, coding, edge cases, and complexity.</p>
+    <div class="summaryGrid">
+      <div class="summaryStat"><strong>60</strong>Questions</div>
+      <div class="summaryStat"><strong>12</strong>Stages</div>
+      <div class="summaryStat"><strong id="finalMistakes">0</strong>Mistakes</div>
+      <div class="summaryStat"><strong id="finalRetries">0</strong>Retries</div>
+    </div>
+    <div class="takeaways">
+      <div class="takeaway"><strong>Dynamic arrays:</strong> direct index access is O(1), but front shifts and individual resizes are O(n).</div>
+      <div class="takeaway"><strong>Linked lists:</strong> order lives in reachability through next pointers, not physical adjacency.</div>
+      <div class="takeaway"><strong>Pointer safety:</strong> save links before changing or freeing nodes, and preserve the head special case.</div>
+      <div class="takeaway"><strong>Choose by operation:</strong> no data structure wins every workload.</div>
+    </div>
+    <div class="actions"><button id="restartBtn" class="btn primary" type="button">Restart all 60 questions</button></div>
+  </section>
+</div>
+
+<script>
+(() => {
+const stages = [
+  {
+    title:'1. Dynamic Array Strengths', short:'Array', desc:'Start from what the dynamic array already does well before focusing on its pain points.',
+    qs:[
+      {p:'You need the value at index 2 in [10, 20, 30, _, _]. What is the access complexity?',o:['O(1)','O(log n)','O(n)'],a:0,e:'A dynamic array computes the address from the base pointer and index. No traversal is required.',demo:'access',d:{idx:2}},
+      {p:'The array shows size = 3 and capacity = 5. Which slots belong to the current logical sequence?',o:['Only indices 0, 1, and 2','All indices 0 through 4','Only the empty slots 3 and 4'],a:0,e:'size = 3 means operations treat indices 0..2 as the logical contents; spare capacity is not yet part of the sequence.',demo:'logical'},
+      {p:'Why does the slide describe dynamic-array memory as compact?',o:['Values occupy one contiguous block','Every element stores a next pointer','Each element is allocated separately'],a:0,e:'Contiguous storage keeps the values physically adjacent and supports direct address arithmetic.',demo:'compact'},
+      {p:'There is spare capacity at index 3. Appending 40 now mainly requires what?',o:['Write 40 into the next free slot','Shift every value right','Allocate a new linked node'],a:0,e:'When spare capacity exists, an end append writes into the next free slot without shifting existing values.',demo:'append'},
+      {p:'Why is dynamic-array append usually described as O(1) amortized rather than always O(1)?',o:['Occasional full-capacity resizes copy many values','Every append scans from index 0','Every append shifts all values'],a:0,e:'Most appends are constant-time, but occasional resizes are O(n); averaged over many appends, the cost is O(1) amortized.',demo:'amortized'}
+    ]
+  },
+  {
+    title:'2. Front Insertion: Feel the Shift', short:'Front', desc:'Make room at index 0 and watch the cost grow with the number of stored values.',
+    qs:[
+      {p:'Insert 5 at index 0 into [10, 20, 30, 40, _]. Which existing value must move first to avoid overwriting data?',o:['40','10','20','30'],a:0,e:'Shift from the end toward the front. Moving 10 first would overwrite 20 before it was saved.',demo:'frontFirst'},
+      {p:'After 40 moves to index 4, which value should move next?',o:['30','10','5','40 again'],a:0,e:'Continue backward: 30 moves to index 3, then 20, then 10.',demo:'frontSecond'},
+      {p:'How many existing values move when inserting 5 at the front of four stored values?',o:['4','1','2','0'],a:0,e:'All four existing values shift one position right before 5 can be written.',demo:'frontCount'},
+      {p:'If the array holds about 1,000 values, a front insertion may move about how many values?',o:['About 1,000','Exactly 1','About log2(1000)','None'],a:0,e:'The amount of shifting grows directly with the number of values already stored.',demo:'frontN'},
+      {p:'What is the asymptotic cost of front insertion in a dynamic array?',o:['O(n)','O(1)','O(log n)'],a:0,e:'Every element after the insertion point may need to shift, so the cost grows linearly with n.',demo:'frontFull'}
+    ]
+  },
+  {
+    title:'3. Deletion: Close the Gap', short:'Delete', desc:'Deleting from a contiguous ordered block creates a hole that later values must close.',
+    qs:[
+      {p:'Delete 20 from [10, 20, 30, 40]. Which value moves into index 1 first?',o:['30','40','10','Nothing'],a:0,e:'30 shifts left into the hole at index 1.',demo:'delFirst'},
+      {p:'After 30 moves left, what must happen to 40?',o:['Move left into index 2','Stay at index 3 and still count in size','Move to index 0'],a:0,e:'40 also shifts left so the logical values remain adjacent and ordered.',demo:'delSecond'},
+      {p:'After deletion, slot 3 may still physically contain the old value 40. What is that slot?',o:['A stale slot outside logical size','A second valid 40','The new head'],a:0,e:'The logical size becomes 3, so operations ignore slot 3 even if old bytes remain there.',demo:'stale'},
+      {p:'After deleting 20, what should the logical size be?',o:['3','4','2','5'],a:0,e:'Three logical values remain: 10, 30, and 40.',demo:'size3'},
+      {p:'Why is deletion near the front of a dynamic array O(n) in the worst case?',o:['Later values shift left to close the gap','The array must follow next pointers','The array always doubles capacity'],a:0,e:'Preserving order and contiguity can require moving every later element.',demo:'delFull'}
+    ]
+  },
+  {
+    title:'4. Growing When Full', short:'Resize', desc:'When capacity is exhausted, growth may require a new contiguous block and a complete copy.',
+    qs:[
+      {p:'Capacity is full. Can the existing memory block always grow in place?',o:['No','Yes, always','Only if the first value is 10'],a:0,e:'A larger adjacent region may not be available, so growth may need a separate allocation.',demo:'resizeNeed'},
+      {p:'If capacity grows from 4 to 8, what happens to the four old values in the usual resize strategy?',o:['They are copied to the new block','Only the last value is copied','They become linked nodes'],a:0,e:'The old values are copied into the new larger contiguous block.',demo:'resizeCopy'},
+      {p:'What is the cost of that individual resize when n old values must be copied?',o:['O(n)','O(1)','O(log n)'],a:0,e:'Copying all n existing values is linear work for that resize event.',demo:'resizeCost'},
+      {p:'Suppose allocation of the new block fails. Which state must remain valid?',o:['The original pointer, values, size, and capacity','Only the new pointer','Nothing; data loss is expected'],a:0,e:'Failure preservation means the old valid state must remain unchanged if the new allocation cannot be obtained.',demo:'resizeFail'},
+      {p:'Which statement best explains why append can still be O(1) amortized?',o:['Many cheap appends share the cost of occasional expensive resizes','Every append is secretly O(n)','Resizing never copies values'],a:0,e:'The occasional O(n) resize is spread across many O(1) appends.',demo:'resizeAmortized'}
+    ]
+  },
+  {
+    title:'5. Physical Memory vs Logical Order', short:'Memory', desc:'Learn that linked-list order is defined by addresses stored in next pointers, not by where node boxes happen to sit in memory.',
+    qs:[
+      {p:'Nodes 10, 20, and 30 live at addresses 0xA120, 0xF830, and 0x31C0. Must those addresses be adjacent for the list to be valid?',o:['No','Yes','Only when the list has three nodes'],a:0,e:'Linked-list nodes may be allocated anywhere. The next pointers define the logical chain.',demo:'physLayout'},
+      {p:'If HEAD contains 0xA120, what does that value represent?',o:['The address of the first reachable node','The number of nodes','The address of NULL'],a:0,e:'head stores one address: the address of the first node in the reachable chain.',demo:'physHead'},
+      {p:'If the three node boxes are rearranged on screen but their stored next addresses are unchanged, what happens to logical order?',o:['It stays 10 -> 20 -> 30','It becomes the screen order','The list becomes invalid automatically'],a:0,e:'Physical placement does not define linked-list order; the next addresses do.',demo:'physShuffle'},
+      {p:'Which representation requires values to occupy one contiguous block?',o:['Dynamic array','Singly linked list','Both'],a:0,e:'Dynamic arrays use contiguous storage; singly linked lists use separate node allocations connected by pointers.',demo:'physArrayCompare'},
+      {p:'Which statement is the best rule?',o:['Physical location and logical order are separate in a linked list','Linked-list nodes must be sorted by address','HEAD always contains the smallest address'],a:0,e:'Logical order follows the pointer chain from head, independent of numerical address order.',demo:'physRule'}
+    ]
+  },
+  {
+    title:'6. HEAD and Reachability', short:'HEAD', desc:'Treat head as the entry pointer into the reachable chain, not as the entire list itself.',
+    qs:[
+      {p:'What is head in a singly linked list?',o:['A pointer to the first reachable node','The whole list stored inside one variable','A counter of nodes'],a:0,e:'head is only the entry pointer. The rest of the list is reached by following next.',demo:'headConceptMeaning'},
+      {p:'Start with HEAD -> 10 -> 20 -> 30 -> NULL. After head = head->next, where does head point?',o:['20','10','30'],a:0,e:'head advances one link and now points to node 20.',demo:'headConceptAdvance',code:'head = head->next;'},
+      {p:'After head = head->next, node 10 still exists in memory but nothing else points to it. Is 10 still part of the list?',o:['No','Yes','Only until the next traversal'],a:0,e:'It is no longer reachable from head, so it is not part of the logical list.',demo:'headConceptLost',code:'head = head->next;'},
+      {p:'Which condition describes a valid list from head?',o:['A finite reachable chain that ends in NULL','Every allocated node in the program must be reachable','All node addresses must increase'],a:0,e:'Correctness is defined by the finite reachable chain from head ending in NULL.',demo:'headConceptInvariant'},
+      {p:'What does an empty list use for head?',o:['NULL','0 stored inside a node','The last freed address'],a:0,e:'head == NULL represents an empty list with no reachable node.',demo:'headConceptEmpty'}
+    ]
+  },
+  {
+    title:'7. Pointer-State Tracing', short:'Pointers', desc:'Track HEAD, CURRENT, and PREVIOUS explicitly so code and structure stay synchronized in your mental model.',
+    qs:[
+      {p:'At the start of a search, which assignment correctly initializes current?',o:['current = head','current = NULL','current = previous'],a:0,e:'Search begins at the first reachable node, so current starts at head.',demo:'ptrStateStart',code:'Node *previous = NULL;\nNode *current = head;'},
+      {p:'If current points to 10, what does current = current->next do?',o:['Moves current to 20','Moves head to 20','Changes 10 into 20'],a:0,e:'Only the temporary traversal pointer moves to the next node.',demo:'ptrStateAdvance',code:'current = current->next;'},
+      {p:'During deletion search, after previous = current; current = current->next;, what relationship should hold?',o:['previous trails current by one node','previous and current must always be identical','previous becomes NULL every step'],a:0,e:'previous remembers the surviving node immediately before current.',demo:'ptrStatePrevious',code:'previous = current;\ncurrent = current->next;'},
+      {p:'Searching for target 30 in 10 -> 20 -> 30 -> NULL, what should the final pointer state be when found?',o:['previous = 20, current = 30','previous = 30, current = NULL','previous = 10, current = 20'],a:0,e:'previous trails current, so when current reaches 30, previous points to 20.',demo:'ptrStateFound',code:'while (current && current->value != target) {\n    previous = current;\n    current = current->next;\n}'},
+      {p:'Why is the worst-case search still O(n) even though each pointer move is O(1)?',o:['The O(1) move may repeat for up to n nodes','Pointer assignment becomes O(n) by itself','HEAD must be resized'],a:0,e:'A constant-time step repeated n times produces linear total work.',demo:'ptrStateComplexity'}
+    ]
+  },
+  {
+    title:'8. Search Cost vs Relink Cost', short:'Cost Split', desc:'Separate the cost of locating a node from the cost of changing pointers once that node is already known.',
+    qs:[
+      {p:'You already have Node *current pointing to node 20. What is the cost of inserting a new node immediately after current?',o:['O(1)','O(n)','O(log n)'],a:0,e:'With the insertion position already known, only a constant number of pointer assignments are needed.',demo:'costSplitKnownInsert',code:'newNode->next = current->next;\ncurrent->next = newNode;'},
+      {p:'You only know the value 20, not its node address. What usually happens before inserting after it?',o:['Traverse/search from head','Jump directly by index','Shift all nodes'],a:0,e:'A singly linked list must search through next pointers to locate the target node.',demo:'costSplitValue'},
+      {p:'If searching for node 30 costs O(n) and the relink after finding it costs O(1), what is the total worst-case cost?',o:['O(n)','O(1)','O(n^2)'],a:0,e:'The linear search dominates the constant-time relinking.',demo:'costSplitDominates'},
+      {p:'Which statement is accurate?',o:['Linked-list insertion is O(1) only when the insertion position is already known','Every linked-list insertion is O(1)','Every linked-list insertion is O(n^2)'],a:0,e:'Finding the position may cost O(n); changing the links at a known position is O(1).',demo:'costSplitRule'},
+      {p:'Without a tail pointer, why is insert-at-end O(n) in this lesson?',o:['Finding the last node requires traversal','Linking the new node itself requires n writes','malloc shifts all nodes'],a:0,e:'The relink at the end is constant-time, but locating the end requires a full traversal.',demo:'costSplitEnd'}
+    ]
+  },
+  {
+    title:'9. Coding with Node **head', short:'Node **', desc:'Understand why functions that may replace the caller\'s head need access to the head pointer itself.',
+    qs:[
+      {p:'A function receives Node *head and executes head = newNode. What changes?',o:['Only the function\'s local copy of head','The caller\'s head automatically','Every next pointer'],a:0,e:'Passing Node *head by value gives the function a copy of the pointer.',demo:'ppLocal',code:'void f(Node *head) {\n    head = newNode;\n}'},
+      {p:'A function receives Node **head. Which expression refers to the caller\'s actual head pointer value?',o:['*head','head->next','**head->next'],a:0,e:'head points to the caller\'s head variable; dereferencing once gives that actual Node * value.',demo:'ppCaller',code:'void f(Node **head) {\n    *head = newNode;\n}'},
+      {p:'Which signature is appropriate for insertFront when it must replace the caller\'s head?',o:['insertFront(Node **head, int val)','insertFront(int head, int val)','insertFront(Node head, int val)'],a:0,e:'Node **head lets the function update the caller\'s head pointer safely.',demo:'ppInsert',code:'void insertFront(Node **head, int val) {\n    newNode->next = *head;\n    *head = newNode;\n}'},
+      {p:'When deleting the head node inside deleteFirst(Node **head, ...), which update changes the caller\'s head?',o:['*head = current->next;','head = current->next;','current = *head;'],a:0,e:'The caller\'s head variable is updated by assigning through *head.',demo:'ppDeleteHead',code:'if (previous == NULL)\n    *head = current->next;'},
+      {p:'Why does printList usually not need Node **head?',o:['It only reads/traverses and does not replace the caller\'s head','Printing requires no pointer at all','Node ** is only for arrays'],a:0,e:'A read-only traversal can receive a Node * because it does not need to modify the caller\'s pointer variable.',demo:'ppWhy',code:'void printList(const Node *head);'}
+    ]
+  },
+  {
+    title:'10. Delete Safely: Search, Relink, Edge Cases', short:'Delete Safe', desc:'Combine pointer roles, bypassing, head deletion, and not-found behavior without violating reachability.',
+    qs:[
+      {p:'While searching for target 20, what does previous represent?',o:['The surviving node immediately before current','The node after current','The list capacity'],a:0,e:'previous is needed so its next pointer can bypass current when current is deleted.',demo:'deleteRoles',code:'Node *previous = NULL, *current = *head;'},
+      {p:'For a non-head deletion, which statement bypasses current?',o:['previous->next = current->next;','current->next = previous;','*head = NULL;'],a:0,e:'The predecessor must point directly to the node after current.',demo:'deleteRelink',code:'previous->next = current->next;\nfree(current);'},
+      {p:'Which order is memory-safe?',o:['Relink using current->next, then free(current)','free(current), then read current->next','Free previous first'],a:0,e:'Every needed field of current must be read before its memory is released.',demo:'deleteOrder',code:'previous->next = current->next;\nfree(current);'},
+      {p:'If the target is at the head and previous == NULL, which update is required?',o:['*head = current->next;','previous->next = current->next;','head = NULL always;'],a:0,e:'There is no predecessor node, so the head pointer itself must move.',demo:'deleteHead',code:'if (previous == NULL)\n    *head = current->next;'},
+      {p:'What should deleteFirst do when search ends with current == NULL?',o:['Return without relinking or freeing','Free previous','Set head to an arbitrary address'],a:0,e:'current == NULL means the target was not found, so no node should be removed.',demo:'notFound',code:'if (current == NULL) return;'}
+    ]
+  },
+  {
+    title:'11. Free the Whole List', short:'Cleanup', desc:'Every node was allocated separately, so cleanup must preserve the next address before freeing the current node.',
+    qs:[
+      {p:'Before free(current), what must be saved?',o:['next = current->next','head = NULL immediately','previous->value'],a:0,e:'The next node address must be saved while current is still valid.',demo:'freeSave',code:'Node *next = current->next;\nfree(current);\ncurrent = next;'},
+      {p:'After saving next, which operation releases the current node?',o:['free(current);','free(next);','current = head;'],a:0,e:'current is the node whose memory should now be released.',demo:'freeCurrent',code:'Node *next = current->next;\nfree(current);'},
+      {p:'After free(current), how should traversal continue safely?',o:['current = next;','current = current->next;','read current->value first'],a:0,e:'current itself is no longer valid; use the previously saved next pointer.',demo:'freeAdvance',code:'free(current);\ncurrent = next;'},
+      {p:'After every reachable node has been freed, what should happen to the caller\'s head?',o:['*head = NULL;','Leave it pointing to freed memory','Set it to the last freed node'],a:0,e:'Clearing head prevents a dangling pointer to freed storage.',demo:'freeHead',code:'*head = NULL;'},
+      {p:'Why is current = current->next after free(current) a bug?',o:['It dereferences freed memory: use-after-free','It makes cleanup O(1)','It allocates a new node'],a:0,e:'Once current is freed, reading current->next is undefined behavior.',demo:'useAfterFree',code:'free(current);\ncurrent = current->next; // BUG'}
+    ]
+  },
+  {
+    title:'12. Final Boss: deleteFirst()', short:'Boss', desc:'Put the mental model together: pointer-to-pointer, search state, special cases, safe relinking, freeing, and total complexity.',
+    qs:[
+      {p:'Complete initialization: Node *previous = ____ , *current = *head;',o:['NULL','*head','current->next'],a:0,e:'previous starts NULL because current initially points to the head and has no predecessor yet.',demo:'bossInit',code:'Node *previous = NULL, *current = *head;'},
+      {p:'Inside the search loop, which two updates correctly advance previous and current?',o:['previous = current; current = current->next;','current = previous; previous = NULL;','*head = current; current = *head;'],a:0,e:'previous trails current by one node as current moves through the chain.',demo:'bossSearch',code:'previous = current;\ncurrent = current->next;'},
+      {p:'Target found at the head. Which line preserves the remaining chain and updates the caller?',o:['*head = current->next;','previous->next = current->next;','head = NULL always;'],a:0,e:'When previous is NULL, assign through *head so the caller\'s entry pointer moves to the next node.',demo:'bossHead',code:'if (previous == NULL)\n    *head = current->next;'},
+      {p:'Target found in the middle. Which line bypasses it before free(current)?',o:['previous->next = current->next;','current->next = previous;','free(previous);'],a:0,e:'The predecessor must point directly to the node after current before current is freed.',demo:'bossMiddle',code:'else\n    previous->next = current->next;\nfree(current);'},
+      {p:'What is the overall worst-case complexity of deleteFirst(head, target), and why?',o:['O(n), because search may traverse the whole list even though relink/free are O(1)','O(1), because relinking is constant','O(n^2), because two pointers are used'],a:0,e:'The search may visit n nodes, while the final relink and free are constant-time. Search dominates.',demo:'bossFull',code:'while (current && current->value != target) {\n    previous = current;\n    current = current->next;\n}\n...\nfree(current);'}
+    ]
+  }
+];
+
+const totalQuestions = stages.reduce((n,s)=>n+s.qs.length,0);
+if(totalQuestions !== 60) throw new Error('Question count must be exactly 60');
+let sIdx=0,qIdx=0,mistakes=0,retries=0,locked=false,lastDemo=null;
+const solved = stages.map(s=>s.qs.map(()=>false));
+const attempts = stages.map(s=>s.qs.map(()=>0));
+const delays={slow:1800,normal:1200,fast:700};
+const $=id=>document.getElementById(id);
+const visual=$('visualStage'),note=$('visualNote'),feedback=$('feedback'),options=$('options'),codeBox=$('codeBox');
+
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+function D(){return delays[$('speedSelect').value]||1650}
+function overallIndex(){let n=0;for(let i=0;i<sIdx;i++)n+=stages[i].qs.length;return n+qIdx}
+function completedCount(){return solved.flat().filter(Boolean).length}
+function updateHeader(){
+  const c=completedCount();$('progressBar').style.width=(c/totalQuestions*100)+'%';
+  $('overallText').textContent=`Question ${Math.min(overallIndex()+1,60)} / 60`;
+  $('attemptText').textContent=`Mistakes: ${mistakes}`;
+  const map=$('stageMap');map.innerHTML='';
+  stages.forEach((s,i)=>{const done=solved[i].filter(Boolean).length;const d=document.createElement('div');d.className='stageDot'+(i===sIdx?' current':'')+(done===5?' done':'')+(i>sIdx?' locked':'');d.innerHTML=`<strong>${i+1}. ${s.short}</strong>${done}/5`;map.appendChild(d)});
+}
+function renderCode(q,active=-1,state=''){
+  if(!q.code){codeBox.innerHTML='';return}
+  const lines=q.code.split('\n');codeBox.innerHTML=`<div class="code">${lines.map((l,i)=>`<span class="codeLine ${i===active?'active':''} ${state&&i===active?state:''}">${escapeHtml(l)}</span>`).join('')}</div>`;
+}
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function arrayHTML(vals,opt={}){let out='<div class="arrayWrap"><div class="arrayRow">';const cap=opt.cap??vals.length;for(let i=0;i<cap;i++){let v=i<vals.length?vals[i]:null;let cls='cell';if(v===null||v==='')cls+=' empty';if(opt.hot===i)cls+=' hot';if(opt.good===i)cls+=' good';if(opt.bad===i)cls+=' bad';if(opt.stale===i)cls+=' stale';out+=`<div class="${cls}"><div class="v">${v===null||v===''?'—':v}</div><div class="i">${i}</div></div>`}return out+'</div></div>'}
+function listHTML(vals,opt={}){let out='<div class="listWrap"><div class="listRow">';if(opt.head!==false)out+='<strong>HEAD</strong><span class="arrow">→</span>';vals.forEach((v,i)=>{let cls='node';if(opt.hot===i)cls+=' hot';if(opt.good===i)cls+=' good';if(opt.bad===i)cls+=' bad';if(opt.dead===i)cls+=' dead';let labels=[];if(opt.current===i)labels.push('CURRENT');if(opt.previous===i)labels.push('PREVIOUS');if(opt.newIndex===i)labels.push('NEW');out+=`<div><div class="ptr">${labels.join(' · ')}</div><div class="${cls}"><div class="value">${v}</div><div class="next">•</div></div></div><span class="arrow ${opt.hotArrow===i?'hot':''}">→</span>`});out+='<strong>NULL</strong></div></div>';if(opt.float){out+=`<div class="floating"><span class="floatLabel">UNREACHABLE</span><div class="node bad"><div class="value">${opt.float}</div><div class="next">•</div></div></div>`}return out}
+function compareHTML(leftTitle,leftBody,rightTitle,rightBody,lMetric='',rMetric=''){return `<div class="compareGrid"><div class="compareCard"><h4>${leftTitle}</h4>${leftBody}<div class="metric">${lMetric}</div></div><div class="compareCard"><h4>${rightTitle}</h4>${rightBody}<div class="metric">${rMetric}</div></div></div>`}
+function physicalMemoryHTML(order='A',highlight=''){
+  const nodes={
+    n10:{addr:'0xA120',value:10,next:'0xF830'},
+    n20:{addr:'0xF830',value:20,next:'0x31C0'},
+    n30:{addr:'0x31C0',value:30,next:'NULL'}
+  };
+  const layouts={A:['n10','n30','n20'],B:['n20','n10','n30'],C:['n30','n20','n10']};
+  const seq=layouts[order]||layouts.A;
+  const cards=seq.map(k=>{const n=nodes[k];const cls=highlight===k?'memoryBlock hot':'memoryBlock';return `<div class="${cls}"><div class="mini"><strong>${n.addr}</strong></div><div style="font-size:24px;font-weight:900;margin:6px 0">value ${n.value}</div><div class="mini">next = ${n.next}</div></div>`}).join('');
+  return `<div class="stack"><div class="callout"><strong>Logical chain:</strong> HEAD(0xA120) → 10 → 20 → 30 → NULL</div><div class="memoryGrid">${cards}</div></div>`;
+}
+function pointerStateHTML(vals,opt={},state={}){
+  const rows=Object.entries(state).map(([k,v])=>`<div class="chip"><strong>${k}</strong>: ${v}</div>`).join('');
+  return `<div class="stack">${listHTML(vals,opt)}<div class="chips" style="margin-top:12px">${rows}</div></div>`;
+}
+function callerHeadHTML(mode='local'){
+  if(mode==='local') return compareHTML('CALLER: main()',listHTML([20,30],{}),'FUNCTION PARAMETER','<div class="callout amber"><strong>Node *head</strong><br>local copy of the address</div>','caller head unchanged','local head can change');
+  if(mode==='double') return compareHTML('CALLER: main()',listHTML([20,30],{}),'FUNCTION PARAMETER','<div class="callout green"><strong>Node **head</strong><br>points to caller\'s head variable</div>','caller owns Node *head','*head can update caller');
+  return compareHTML('CALLER BEFORE',listHTML([20,30],{}),'CALLER AFTER',listHTML([10,20,30],{good:0,newIndex:0}),'head → 20','head → 10');
+}
+async function frame(html,msg,scale=1){visual.innerHTML=html;note.textContent=msg;await delay(Math.max(250,D()*scale))}
+function initialVisual(q){
+  const d=q.demo;
+  if(d.startsWith('access')||['logical','compact','append','amortized'].includes(d)) return arrayHTML([10,20,30],{cap:5,hot:d==='access'?2:undefined});
+  if(d.startsWith('front')) return arrayHTML([10,20,30,40],{cap:5});
+  if(d.startsWith('del')||d==='stale'||d==='size3') return arrayHTML([10,20,30,40],{cap:4});
+  if(d.startsWith('resize')) return `<div class="stack"><div class="memoryGrid"><div class="memoryBlock"><h4>OLD BLOCK · capacity 4</h4>${arrayHTML([10,20,30,40],{cap:4})}</div><div class="memoryBlock"><h4>NEW BLOCK</h4><div class="mini">Not allocated yet</div></div></div></div>`;
+  if(d.startsWith('phys')) return physicalMemoryHTML('A');
+  if(d.startsWith('headConcept')) return listHTML([10,20,30],{});
+  if(d.startsWith('ptrState')) return pointerStateHTML([10,20,30],{current:0,hot:0},{HEAD:'10',CURRENT:'10',PREVIOUS:'NULL',TARGET:'30'});
+  if(d.startsWith('costSplit')) return listHTML([10,20,30,40],{});
+  if(d.startsWith('pp')) return callerHeadHTML(d==='ppLocal'?'local':'double');
+  if(d.startsWith('insert')) return listHTML([20,30],{});
+  if(d.startsWith('delete')||d==='notFound'||d.startsWith('boss')) return listHTML([10,20,30],{});
+  if(d.startsWith('free')||d==='useAfterFree') return listHTML([10,20,30],{current:0,hot:0});
+  if(d.startsWith('compare')) return compareHTML('Dynamic Array',arrayHTML([10,20,30],{cap:5}),'Singly Linked List',listHTML([10,20,30],{}));
+  return '<div class="mini">Visual ready.</div>';
+}
+function renderQuestion(){
+  locked=false;const st=stages[sIdx],q=st.qs[qIdx];
+  $('eyebrow').textContent=`Stage ${sIdx+1} of 12 · ${st.short}`;$('stageTitle').textContent=st.title;$('stageDesc').textContent=st.desc;$('qCount').textContent=`Question ${qIdx+1} of 5 · Overall ${overallIndex()+1} of 60`;$('prompt').textContent=q.p;
+  visual.innerHTML=initialVisual(q);note.textContent='Choose an answer to test your mental model.';renderCode(q);
+  options.innerHTML='';q.o.forEach((txt,i)=>{const b=document.createElement('button');b.className='option';b.type='button';b.textContent=txt;b.addEventListener('click',()=>answer(i,b));options.appendChild(b)});
+  feedback.className='feedback';feedback.innerHTML='Answer first. A wrong choice will show partial visual evidence and stop; a correct choice will let the full operation continue.';
+  $('chips').innerHTML=`<span class="chip">Stage ${sIdx+1}/12</span><span class="chip">Question ${qIdx+1}/5</span><span class="chip">Default: slow animation</span>`;
+  $('nextBtn').disabled=true;$('replayBtn').disabled=true;lastDemo=null;updateHeader();
+}
+function setOptionsDisabled(v){[...options.querySelectorAll('button')].forEach(b=>b.disabled=v)}
+async function answer(choice,btn){
+  if(locked||solved[sIdx][qIdx])return;locked=true;setOptionsDisabled(true);attempts[sIdx][qIdx]++;
+  const q=stages[sIdx].qs[qIdx];const ok=choice===q.a;
+  if(!ok){mistakes++;if(attempts[sIdx][qIdx]>1)retries++;btn.classList.add('wrong');feedback.className='feedback hint';feedback.innerHTML='<strong>Not yet.</strong> Watch the visual evidence. It will stop before the full operation finishes so you can revise your model.';await runDemo(q,'wrong',choice);feedback.className='feedback bad';feedback.innerHTML=`<strong>Try again.</strong>${wrongHint(q)}`;setOptionsDisabled(false);btn.disabled=false;$('replayBtn').disabled=true;locked=false;updateHeader();return}
+  btn.classList.add('correct');feedback.className='feedback good';feedback.innerHTML='<strong>Correct prediction.</strong> Now watch the complete evidence.';await runDemo(q,'correct',choice);solved[sIdx][qIdx]=true;feedback.className='feedback good';feedback.innerHTML=`<strong>Correct.</strong>${q.e}`;$('nextBtn').disabled=false;$('replayBtn').disabled=false;lastDemo=q;locked=false;updateHeader();
+}
+function wrongHint(q){
+  if(q.demo.startsWith('front')) return ' The operation still has more elements to move, so a constant-time mental model cannot explain the remaining work.';
+  if(q.demo.startsWith('trav')) return ' current has only reached part of the chain. There is no data[i] shortcut.';
+  if(q.demo.includes('delete')||q.demo.startsWith('boss')) return ' Focus on which pointer must remain valid before the node is bypassed or freed.';
+  if(q.demo.startsWith('free')||q.demo==='useAfterFree') return ' Once a node is freed, its fields cannot safely be read again.';
+  if(q.demo.startsWith('resize')) return ' Compare the old valid block with the attempted new allocation and ask what must survive failure.';
+  if(q.demo.startsWith('phys')) return ' Follow the stored addresses and arrows, not the screen position of the node boxes.';
+  if(q.demo.startsWith('headConcept')) return ' Ask which nodes are still reachable by starting only from head.';
+  if(q.demo.startsWith('ptrState')) return ' Track HEAD, CURRENT, and PREVIOUS as separate pointer variables; only some of them move.';
+  if(q.demo.startsWith('costSplit')) return ' Separate the work to find the node from the constant-time pointer rewiring after it is found.';
+  if(q.demo.startsWith('pp')) return ' Distinguish changing a local copy of a pointer from assigning through a pointer to the caller\'s pointer.';
+  return ' Use the highlighted state to identify what the representation actually requires.';
+}
+async function runDemo(q,mode,choice){
+  const wrong=mode==='wrong',d=q.demo;lastDemo=q;
+  renderCode(q);
+  if(d==='access'){
+    if(wrong){await frame(arrayHTML([10,20,30],{cap:5,hot:0}),'A sequential scan would start at index 0 — but dynamic arrays do not need this.',.75);return}
+    await frame(arrayHTML([10,20,30],{cap:5,hot:q.d.idx}),`Address arithmetic jumps directly to index ${q.d.idx}.`,.9);return
+  }
+  if(d==='logical'){await frame(arrayHTML([10,20,30],{cap:5,good:0}),'size = 3: indices 0, 1, and 2 are the logical values.',.75);await frame(arrayHTML([10,20,30],{cap:5,good:2}),'Indices 3 and 4 are spare capacity, not current list elements.',.75);return}
+  if(d==='compact'){await frame(`<div class="stack"><div class="arrayWrap"><div class="arrayRow">${[10,20,30].map((v,i)=>`<div class="cell hot"><div class="v">${v}</div><div class="i">${i}</div></div>`).join('')}</div></div><p class="mini" style="text-align:center">One contiguous physical block</p></div>`,'The values sit side by side in one allocation.',.9);return}
+  if(d==='append'){if(wrong){await frame(arrayHTML([10,20,30],{cap:5,hot:0}),'Shifting 10 would be unnecessary because a free end slot already exists.',.8);return}await frame(arrayHTML([10,20,30],{cap:5,hot:3}),'The next free slot is index 3.',.7);await frame(arrayHTML([10,20,30,40],{cap:5,good:3}),'Write 40 directly into index 3.',.9);return}
+  if(d==='amortized'||d==='resizeAmortized'){
+    await frame(arrayHTML([10,20,30],{cap:4,hot:3}),'Cheap append: use remaining capacity.',.65);if(wrong)return;await frame(arrayHTML([10,20,30,40],{cap:4,good:3}),'Now the block is full.',.65);await frame(`<div class="memoryGrid"><div class="memoryBlock"><h4>OLD 4</h4>${arrayHTML([10,20,30,40],{cap:4})}</div><div class="memoryBlock hot"><h4>NEW 8</h4>${arrayHTML([10,20,30,40],{cap:8})}</div></div>`,'Occasionally, a resize copies all old values.',.95);return
+  }
+  if(d.startsWith('phys')) return physicalDemo(d,wrong);
+  if(d.startsWith('headConcept')) return headConceptDemo(q,d,wrong);
+  if(d.startsWith('ptrState')) return pointerStateDemo(q,d,wrong);
+  if(d.startsWith('costSplit')) return costSplitDemo(q,d,wrong);
+  if(d.startsWith('pp')) return doublePointerDemo(q,d,wrong);
+  if(d.startsWith('front')) return frontDemo(d,wrong);
+  if(['delFirst','delSecond','stale','size3','delFull'].includes(d)) return deleteArrayDemo(d,wrong);
+  if(d.startsWith('resize')) return resizeDemo(d,wrong);
+  if(['positionsToLinks','nodeFields','pointerField','unreachable','invariant'].includes(d)) return representationDemo(d,wrong);
+  if(d.startsWith('trav')||d==='headStable') return traversalDemo(d,wrong);
+  if(d.startsWith('insert')) return insertDemo(q,d,wrong);
+  if(['deleteRoles','deleteFound','deleteRelink','deleteOrder','notFound'].includes(d)) return deleteNodeDemo(q,d,wrong);
+  if(['empty','singleDelete','deleteHead','insertEmpty','endNoTail'].includes(d)) return edgeDemo(q,d,wrong);
+  if(d.startsWith('free')||d==='useAfterFree') return freeDemo(q,d,wrong);
+  if(d.startsWith('compare')) return compareDemo(d,wrong);
+  if(d.startsWith('boss')) return bossDemo(q,d,wrong);
+}
+async function physicalDemo(d,wrong){
+  if(d==='physLayout'){await frame(physicalMemoryHTML('A'),'The addresses are scattered, yet next pointers still form 10 → 20 → 30.',.9);return}
+  if(d==='physHead'){await frame(physicalMemoryHTML('A','n10'),'HEAD stores 0xA120, the address of the first reachable node.',.9);return}
+  if(d==='physShuffle'){
+    await frame(physicalMemoryHTML('A'),'First physical arrangement.',.7);if(wrong)return;
+    await frame(physicalMemoryHTML('B'),'The boxes moved physically, but the stored addresses still describe the same logical chain.',1);return
+  }
+  if(d==='physArrayCompare'){
+    await frame(compareHTML('Dynamic Array',arrayHTML([10,20,30],{cap:3}),'Linked Nodes',physicalMemoryHTML('C'),'one contiguous block','separate allocations'),'Only the array requires physical adjacency.',.95);return
+  }
+  await frame(physicalMemoryHTML('C'),'Read the chain by following HEAD and each next address, not by sorting addresses or screen positions.',.95)
+}
+async function headConceptDemo(q,d,wrong){
+  renderCode(q,0);
+  if(d==='headConceptMeaning'){await frame(pointerStateHTML([10,20,30],{}, {HEAD:'address of node 10'}),'head is one pointer that identifies the entry node.',.9);return}
+  if(d==='headConceptEmpty'){await frame('<strong style="font-size:30px">HEAD → NULL</strong>','No node is reachable, so the list is empty.',.9);return}
+  if(d==='headConceptInvariant'){await frame(listHTML([10,20,30],{good:2}),'Starting at head, every next pointer stays valid and the finite chain ends at NULL.',1);return}
+  await frame(listHTML([10,20,30],{hot:0}),'Before: head points to 10.',.7);if(wrong)return;
+  await frame(`<div class="stack">${listHTML([20,30],{good:0})}<div class="floating"><span class="floatLabel">UNREACHABLE FROM HEAD</span><div class="node bad"><div class="value">10</div><div class="next">•</div></div></div></div>`,'After head = head->next, the logical list begins at 20. Node 10 is no longer reachable from head.',1)
+}
+async function pointerStateDemo(q,d,wrong){
+  renderCode(q,0);
+  await frame(pointerStateHTML([10,20,30],{current:0,hot:0},{HEAD:'10',CURRENT:'10',PREVIOUS:'NULL',TARGET:'30'}),'Initial pointer state.',.75);if(wrong)return;
+  if(d==='ptrStateStart')return;
+  await frame(pointerStateHTML([10,20,30],{current:1,hot:1},{HEAD:'10',CURRENT:'20',PREVIOUS:d==='ptrStateAdvance'?'NULL':'10',TARGET:'30'}),'current advances to 20 while HEAD stays at 10.',.85);if(d==='ptrStateAdvance')return;
+  if(d==='ptrStatePrevious'){await frame(pointerStateHTML([10,20,30],{previous:0,current:1,hot:1},{HEAD:'10',CURRENT:'20',PREVIOUS:'10',TARGET:'30'}),'previous trails current by one node.',.9);return}
+  await frame(pointerStateHTML([10,20,30],{previous:1,current:2,hot:2},{HEAD:'10',CURRENT:'30',PREVIOUS:'20',TARGET:'30'}),'Target found: previous = 20, current = 30.',.9);if(d==='ptrStateFound')return;
+  await frame(pointerStateHTML([10,20,30,40],{previous:2,current:3,hot:3},{HEAD:'10',CURRENT:'40',PREVIOUS:'30',TARGET:'missing'}),'A worst-case search repeats the O(1) pointer move across up to n nodes.',1)
+}
+async function costSplitDemo(q,d,wrong){
+  renderCode(q,0);
+  if(d==='costSplitKnownInsert'){
+    await frame(pointerStateHTML([10,20,30],{current:1,hot:1},{CURRENT:'20 already known'}),'No search is needed because current already identifies node 20.',.75);if(wrong)return;
+    await frame(listHTML([10,20,25,30],{good:2,newIndex:2}),'Two pointer assignments insert 25 after the known node: O(1).',.95);return
+  }
+  await frame(listHTML([10,20,30,40],{current:0,hot:0}),'Only a value is known, so search begins at head.',.65);if(wrong)return;
+  await frame(listHTML([10,20,30,40],{current:1,hot:1}),'Search follows next to 20.',.65);
+  if(d==='costSplitValue')return;
+  await frame(listHTML([10,20,30,40],{current:2,hot:2}),'Search reaches 30 after multiple pointer steps.',.7);
+  if(d==='costSplitEnd'){await frame(listHTML([10,20,30,40],{current:3,hot:3}),'Without tail, finding the last node requires traversal to the end.',.85);return}
+  if(d==='costSplitRule'){await frame('<div class="callout green"><strong>Known position:</strong> relink O(1)<br><strong>Unknown position:</strong> search may be O(n)</div>','Do not confuse the constant-time relink with the cost of locating where to relink.',.9);return}
+  await frame('<div class="compareGrid"><div class="compareCard"><h4>SEARCH</h4><div class="cost">O(n)</div><div class="mini">may visit many nodes</div></div><div class="compareCard"><h4>RELINK</h4><div class="cost">O(1)</div><div class="mini">fixed pointer assignments</div></div></div>','Total worst-case cost is O(n) because search dominates.',1)
+}
+async function doublePointerDemo(q,d,wrong){
+  renderCode(q,0);
+  if(d==='ppLocal'){
+    await frame(callerHeadHTML('local'),'Node *head inside the function is a local copy of the caller\'s pointer.',.8);if(wrong)return;
+    await frame(compareHTML('CALLER AFTER',listHTML([20,30],{}),'LOCAL FUNCTION VIEW',listHTML([10],{good:0}),'still head → 20','local head → 10'),'Changing the local copy does not replace the caller\'s head.',1);return
+  }
+  if(d==='ppCaller'){await frame(callerHeadHTML('double'),'Node **head points to the caller\'s head variable; *head is the caller\'s Node * value.',.95);return}
+  if(d==='ppWhy'){await frame(compareHTML('printList(const Node *head)','<div class="callout">Read/traverse only</div>','insertFront(Node **head, ...)', '<div class="callout green">May replace caller head</div>','Node * is enough','Node ** is needed'),'Use Node ** only when the function must change the caller\'s pointer variable.',1);return}
+  await frame(callerHeadHTML('double'),'The function can access the caller\'s actual head through *head.',.7);if(wrong)return;
+  if(d==='ppInsert'){await frame(callerHeadHTML('changed'),'newNode->next = *head; then *head = newNode updates the caller.',1);return}
+  if(d==='ppDeleteHead'){await frame(compareHTML('BEFORE',listHTML([10,20,30],{current:0,hot:0}),'AFTER',listHTML([20,30],{good:0}),'*head → 10','*head → 20'),'Deleting the first node requires changing the caller\'s head pointer.',1)}
+}
+async function frontDemo(d,wrong){
+  await frame(arrayHTML([10,20,30,40,40],{cap:5,hot:4}),'Move 40 right first so it is not overwritten.',.7);if(wrong)return;
+  if(d==='frontFirst')return;
+  await frame(arrayHTML([10,20,30,30,40],{cap:5,hot:3}),'Next, move 30 right.',.75);if(d==='frontSecond')return;
+  await frame(arrayHTML([10,20,20,30,40],{cap:5,hot:2}),'Then move 20 right.',.75);
+  await frame(arrayHTML([10,10,20,30,40],{cap:5,hot:1}),'Then move 10 right.',.75);
+  if(d==='frontCount'||d==='frontN')return;
+  await frame(arrayHTML([5,10,20,30,40],{cap:5,good:0}),'Only now can 5 be written at index 0.',.9)
+}
+async function deleteArrayDemo(d,wrong){
+  await frame(arrayHTML([10,30,30,40],{cap:4,hot:1}),'30 moves left into the hole.',.75);if(wrong)return;if(d==='delFirst')return;
+  await frame(arrayHTML([10,30,40,40],{cap:4,hot:2,stale:3}),'40 moves left; the old bytes at index 3 are now stale.',.8);if(d==='delSecond'||d==='stale')return;
+  await frame(arrayHTML([10,30,40,40],{cap:4,good:2,stale:3}),'Logical size is now 3, so index 3 is ignored.',.85)
+}
+async function resizeDemo(d,wrong){
+  const old=`<div class="memoryBlock"><h4>OLD BLOCK · capacity 4</h4>${arrayHTML([10,20,30,40],{cap:4})}</div>`;
+  await frame(`<div class="memoryGrid">${old}<div class="memoryBlock hot"><h4>NEW BLOCK</h4><div class="mini">Request a larger contiguous allocation...</div></div></div>`,'The old block cannot be assumed to grow in place.',.8);if(wrong)return;if(d==='resizeNeed')return;
+  await frame(`<div class="memoryGrid">${old}<div class="memoryBlock good"><h4>NEW BLOCK · capacity 8</h4>${arrayHTML([10,20,30,40],{cap:8})}</div></div>`,'Copy 10, 20, 30, and 40 into the new block.',.95);if(d==='resizeCopy'||d==='resizeCost')return;
+  if(d==='resizeFail')await frame(`<div class="memoryGrid"><div class="memoryBlock good"><h4>ORIGINAL REMAINS VALID</h4>${arrayHTML([10,20,30,40],{cap:4})}</div><div class="memoryBlock bad"><h4>NEW ALLOCATION FAILED</h4><div class="mini">Do not destroy the original state.</div></div></div>`,'Failure must leave pointer, values, size, and capacity unchanged.',1)
+}
+async function representationDemo(d,wrong){
+  if(d==='positionsToLinks'){await frame(arrayHTML([10,20,30],{cap:3}),'In the array, order is encoded by adjacent positions.',.7);if(wrong)return;await frame(listHTML([10,20,30],{}),'In the list, order is encoded by next links instead.',.9);return}
+  if(d==='nodeFields'||d==='pointerField'){await frame(`<div class="node hot" style="transform:scale(1.25)"><div class="value">10</div><div class="next">•</div></div>`,'One node contains a value field and a next pointer field.',.9);return}
+  if(d==='unreachable'){await frame(listHTML([10,20,30],{float:99}),'Node 99 exists in memory, but head cannot reach it.',.9);return}
+  if(d==='invariant'){await frame(listHTML([10,20,30],{good:2}),'Follow head through a finite chain until the last next pointer is NULL.',.95);return}
+}
+async function traversalDemo(d,wrong){
+  await frame(listHTML([10,20,30,40],{current:0,hot:0}),'current starts at head: node 10.',.75);if(wrong)return;if(d==='travStart')return;
+  await frame(listHTML([10,20,30,40],{current:1,hot:1}),'current = current->next moves to 20.',.8);if(d==='travMove')return;
+  if(d==='headStable'){await frame(listHTML([10,20,30,40],{current:2,hot:2}),'current moves, but HEAD still points to the first node.',.85);return}
+  await frame(listHTML([10,20,30,40],{current:2,hot:2}),'Follow one more link to reach 30.',.8);if(d==='trav30')return;
+  await frame(listHTML([10,20,30,40],{current:3,hot:3}),'In the worst case, traversal continues across the whole chain.',.8)
+}
+async function insertDemo(q,d,wrong){
+  renderCode(q,0);
+  if(d==='insertAlloc'){await frame(`<div class="stack">${listHTML([20,30],{})}<div class="floating"><span class="floatLabel" style="color:var(--green)">NEW ALLOCATION</span><div class="node good"><div class="value">?</div><div class="next">•</div></div></div></div>`,'malloc creates storage for a new node.',.85);return}
+  if(d==='insertValue'){await frame(`<div class="stack">${listHTML([20,30],{})}<div class="floating"><span class="floatLabel" style="color:var(--green)">NEW</span><div class="node good"><div class="value">10</div><div class="next">•</div></div></div></div>`,'Store 10 in newNode->value.',.85);return}
+  await frame(`<div class="stack">${listHTML([20,30],{})}<div class="floating"><span class="floatLabel" style="color:var(--green)">NEW 10</span><div class="node good"><div class="value">10</div><div class="next">•</div></div></div></div>`,'A new node exists, but it is not yet the head.',.65);if(wrong){await frame(`<div class="stack">${listHTML([10],{})}<div class="floating"><span class="floatLabel">OLD CHAIN LOST</span>${listHTML([20,30],{head:false})}</div></div>`,'If head changes before the old chain is linked, 20 -> 30 becomes unreachable.',.9);return}
+  renderCode(q,0);
+  await frame(`<div class="stack"><div class="listRow"><div><div class="ptr">NEW</div><div class="node good"><div class="value">10</div><div class="next">•</div></div></div><span class="arrow hot">→</span><strong>OLD HEAD</strong></div>${listHTML([20,30],{})}</div>`,'First: newNode->next = head preserves the old chain.',.85);if(d==='insertLink')return;
+  renderCode(q,1);
+  await frame(listHTML([10,20,30],{newIndex:0,good:0}),'Second: head = newNode. The new chain is valid.',.9)
+}
+async function deleteNodeDemo(q,d,wrong){
+  await frame(listHTML([10,20,30],{previous:0,current:1,hot:1}),'Search has found target 20: previous = 10, current = 20.',.75);if(wrong){if(d==='deleteOrder'){renderCode(q,1,'bad');await frame(listHTML([10,20,30],{previous:0,current:1,dead:1}),'free(current) first makes current invalid. Reading current->next afterward would be use-after-free.',.9)}return}
+  if(d==='deleteRoles'||d==='deleteFound')return;
+  renderCode(q,0);
+  await frame(listHTML([10,20,30],{previous:0,current:1,dead:1,hotArrow:0}),'Relink previous->next to current->next, bypassing 20.',.85);if(d==='deleteRelink')return;
+  renderCode(q,1);
+  await frame(listHTML([10,30],{previous:0}),'Now free(current). The surviving chain remains reachable.',.9)
+}
+async function edgeDemo(q,d,wrong){
+  if(d==='empty'){await frame('<strong style="font-size:28px">HEAD → NULL</strong>','No node is reachable; the list is empty.',.85);return}
+  if(d==='singleDelete'){await frame(listHTML([20],{current:0,dead:0}),'The only node is being deleted.',.7);if(wrong)return;await frame('<strong style="font-size:28px">HEAD → NULL</strong>','After freeing it, head must be NULL.',.85);return}
+  if(d==='deleteHead'){renderCode(q,1);await frame(listHTML([10,20,30],{current:0,hot:0}),'current is the head, so previous is still NULL.',.7);if(wrong)return;await frame(listHTML([20,30],{good:0}),'Move head directly to current->next before freeing the old head.',.9);return}
+  if(d==='insertEmpty'){await frame('<strong>HEAD → NULL</strong>','The old head value is NULL.',.65);if(wrong)return;await frame(listHTML([10],{newIndex:0,good:0}),'newNode->next receives NULL, then head = newNode creates a valid one-node list.',.9);return}
+  if(d==='endNoTail'){await frame(listHTML([10,20,30],{current:0,hot:0}),'Start at head.',.65);if(wrong)return;await frame(listHTML([10,20,30],{current:1,hot:1}),'No tail pointer: keep walking.',.65);await frame(listHTML([10,20,30],{current:2,hot:2}),'Reach the node whose next is NULL.',.8)}
+}
+async function freeDemo(q,d,wrong){
+  renderCode(q,0);
+  await frame(listHTML([10,20,30],{current:0,hot:0}),'current points to 10.',.65);
+  if(wrong&&d==='useAfterFree'){renderCode(q,0,'bad');await frame(listHTML([10,20,30],{current:0,dead:0}),'10 has been freed. current is now invalid.',.75);await frame(listHTML([10,20,30],{current:0,dead:0}),'Execution stops: current->next would dereference freed memory.',.8);return}
+  if(wrong)return;
+  if(d==='freeSave'){await frame(listHTML([10,20,30],{current:0,hotArrow:0}),'Save next = current->next while current is still valid.',.85);return}
+  await frame(listHTML([10,20,30],{current:0,dead:0}),'Free the current node.',.75);if(d==='freeCurrent'||d==='useAfterFree')return;
+  await frame(listHTML([20,30],{current:0,hot:0}),'Advance using the saved pointer: current = next.',.8);if(d==='freeAdvance')return;
+  if(d==='freeHead')await frame('<strong style="font-size:28px">HEAD → NULL</strong>','After all nodes are freed, clear head to NULL.',.9)
+}
+async function compareDemo(d,wrong){
+  if(d==='compareAccess'){await frame(compareHTML('Dynamic Array',arrayHTML([10,20,30],{cap:5,hot:2}),'Singly Linked List',listHTML([10,20,30],{current:0,hot:0}),'Direct jump: O(1)','Must traverse: O(n)'),'Same goal, different work.',.9);return}
+  if(d==='compareFront'){await frame(compareHTML('Dynamic Array',arrayHTML([10,20,30],{cap:4,hot:3}),'Singly Linked List',listHTML([5,10,20,30],{newIndex:0,good:0}),'Several shifts: O(n)','Two relinks: O(1)'),'Front insertion exposes the linked-list advantage.',.95);return}
+  if(d==='compareEnd'){await frame(compareHTML('Dynamic Array',arrayHTML([10,20,30,40],{cap:5,good:3}),'Singly Linked List',listHTML([10,20,30],{current:2,hot:2}),'O(1) amortized','O(n) without tail'),'The list must find NULL at the end.',.95);return}
+  if(d==='compareCleanup'){await frame(compareHTML('Dynamic Array','<div class="memoryBlock good">One allocation</div>','Singly Linked List',listHTML([10,20,30],{}),'Free one block','Free each reachable node'),'Ownership shape determines cleanup work.',.9);return}
+  await frame(compareHTML('Dynamic Array',arrayHTML([10,20,30],{cap:5}),'Singly Linked List',listHTML([10,20,30],{}),'Wins direct access','Wins front relinking'),'Choose by the operations the workload needs.',.9)
+}
+async function bossDemo(q,d,wrong){
+  renderCode(q,0);
+  if(d==='bossInit'){await frame(listHTML([10,20,30],{current:0,hot:0}),'current = *head and previous = NULL.',.8);return}
+  if(d==='bossSearch'){await frame(listHTML([10,20,30],{previous:0,current:1,hot:1}),'Advance previous to old current, then current to current->next.',.8);if(wrong)return;await frame(listHTML([10,20,30],{previous:1,current:2,hot:2}),'Repeat as the search continues.',.8);return}
+  if(d==='bossHead'){await frame(listHTML([10,20,30],{current:0,hot:0}),'Target is at head; previous is NULL.',.7);if(wrong)return;await frame(listHTML([20,30],{good:0}),'Move *head to current->next.',.9);return}
+  if(d==='bossMiddle'){await frame(listHTML([10,20,30],{previous:0,current:1,hot:1}),'Target is in the middle.',.7);if(wrong)return;await frame(listHTML([10,20,30],{previous:0,current:1,dead:1,hotArrow:0}),'Bypass current.',.75);await frame(listHTML([10,30],{previous:0}),'Then free current.',.85);return}
+  if(d==='bossFull'){await frame(listHTML([10,20,30],{current:0,hot:0}),'Worst-case search starts at head.',.6);if(wrong)return;await frame(listHTML([10,20,30],{previous:0,current:1,hot:1}),'Search step 2.',.6);await frame(listHTML([10,20,30],{previous:1,current:2,hot:2}),'Search may reach the last node.',.6);await frame(listHTML([10,30],{}),'Relink + free are constant work; search dominates overall cost.',.85)}
+}
+$('nextBtn').addEventListener('click',()=>{
+  if(!solved[sIdx][qIdx])return;
+  if(qIdx<4){qIdx++;renderQuestion();return}
+  if(sIdx<stages.length-1){sIdx++;qIdx=0;renderQuestion();return}
+  $('practiceCard').style.display='none';$('summary').classList.add('active');$('finalMistakes').textContent=mistakes;$('finalRetries').textContent=retries;$('progressBar').style.width='100%';$('overallText').textContent='60 / 60 complete';updateHeader();
+});
+$('replayBtn').addEventListener('click',async()=>{if(!lastDemo||locked)return;locked=true;$('replayBtn').disabled=true;await runDemo(lastDemo,'correct',lastDemo.a);$('replayBtn').disabled=false;locked=false});
+$('resetQBtn').addEventListener('click',()=>{if(locked)return;renderQuestion()});
+$('restartBtn').addEventListener('click',()=>location.reload());
+renderQuestion();
+})();
+</script>
+</body>
+</html>

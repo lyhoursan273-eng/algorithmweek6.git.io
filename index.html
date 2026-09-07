@@ -1,0 +1,922 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Algorithm III Week 6 — From Dynamic Array Pain to Singly Linked List</title>
+<style>
+:root{
+  --bg:#f6f7fb;--panel:#ffffff;--text:#172033;--muted:#667085;--border:#d8dde8;
+  --accent:#3157d5;--accentSoft:#eaf0ff;--amber:#f59e0b;--amberSoft:#fff7df;
+  --green:#138a5b;--greenSoft:#e9f7f1;--red:#d64545;--redSoft:#fdecec;
+  --purple:#7656c8;--purpleSoft:#f0ecfb;--dark:#111827;
+  --shadow:0 12px 34px rgba(15,23,42,.08)
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:1280px;margin:0 auto;padding:18px}
+.topbar{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;margin-bottom:12px}
+.brand{font-weight:800;white-space:nowrap}
+.progressWrap{height:9px;background:#e6e9f0;border-radius:999px;overflow:hidden}
+.progress{height:100%;background:var(--accent);width:0;transition:width .25s ease}
+.counter{color:var(--muted);font-size:14px;white-space:nowrap}
+.deck{position:relative}
+.scene{display:none;background:var(--panel);border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow);padding:clamp(20px,3vw,38px);min-height:690px}
+.scene.active{display:block}
+.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:800;color:var(--accent);margin-bottom:8px}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:clamp(34px,6vw,64px);line-height:1.02;margin-bottom:16px}
+h2{font-size:clamp(28px,4vw,46px);line-height:1.08;margin-bottom:12px}
+h3{font-size:20px;margin-bottom:8px}
+.lede{font-size:clamp(18px,2.5vw,24px);color:var(--muted);max-width:900px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.card{border:1px solid var(--border);border-radius:18px;padding:18px;background:#fff}
+.card.soft{background:#fafbff}
+.kpi{font-size:34px;font-weight:900;color:var(--accent)}
+.small{color:var(--muted);font-size:14px}
+.callout{border-left:5px solid var(--accent);padding:14px 16px;background:var(--accentSoft);border-radius:12px}
+.callout.amber{border-left-color:var(--amber);background:var(--amberSoft)}
+.callout.green{border-left-color:var(--green);background:var(--greenSoft)}
+.callout.red{border-left-color:var(--red);background:var(--redSoft)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.btn{border:1px solid var(--border);border-radius:12px;padding:11px 15px;background:#fff;color:var(--text);font-weight:700}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.amber{background:var(--amber);border-color:var(--amber);color:#1f2937}
+.btn.green{background:var(--green);border-color:var(--green);color:#fff}
+.btn.red{background:var(--red);border-color:var(--red);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.nav{display:flex;justify-content:space-between;gap:12px;margin-top:14px}
+.nav .btn{min-width:120px}
+.visualStage{margin-top:20px;padding:22px;border:1px solid var(--border);border-radius:18px;background:linear-gradient(180deg,#fbfcff,#f7f8fb);overflow:auto}
+.arrayRow,.listRow{display:flex;align-items:center;gap:8px;min-width:max-content}
+.cell{width:86px;height:86px;border:2px solid #7c879b;border-radius:12px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:.35s ease;position:relative}
+.cell .v{font-size:26px;font-weight:900}
+.cell .i{font-size:12px;color:var(--muted);position:absolute;bottom:5px}
+.cell.empty{background:#f5f6f8;color:#9ca3af}
+.cell.hot{background:var(--amberSoft);border-color:var(--amber);transform:translateY(-8px)}
+.cell.stale{background:#f3f4f6;color:#9ca3af;border-style:dashed}
+.arrow{font-size:32px;color:#697386;transition:.35s ease}
+.arrow.hot{color:var(--amber);transform:scale(1.15)}
+.node{display:grid;grid-template-columns:72px 42px;border:2px solid #67748b;border-radius:14px;overflow:hidden;background:#fff;transition:.35s ease}
+.node .value{padding:18px 8px;font-size:26px;font-weight:900;text-align:center}
+.node .next{border-left:2px solid #67748b;display:flex;align-items:center;justify-content:center;font-size:20px}
+.node.hot{background:var(--amberSoft);border-color:var(--amber);transform:translateY(-7px)}
+.node.new{background:var(--greenSoft);border-color:var(--green)}
+.node.dead{background:var(--redSoft);border-color:var(--red);opacity:.5}
+.ptr{font-size:12px;font-weight:800;color:var(--accent);text-align:center;margin-bottom:4px}
+.code{background:#101827;color:#e5edf8;border-radius:16px;padding:18px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;line-height:1.6}
+.code .hl{background:#233257;display:block;margin:0 -6px;padding:0 6px;border-radius:6px}
+.quizOpts{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.quizFeedback{margin-top:10px;font-weight:800;min-height:24px}
+.choice{border:2px solid var(--border);border-radius:14px;padding:14px 16px;background:#fff;min-width:100px;font-weight:800}
+.choice.correct{border-color:var(--green);background:var(--greenSoft)}
+.choice.wrong{border-color:var(--red);background:var(--redSoft)}
+.badge{display:inline-block;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;background:#eef1f7;color:#495468}
+.cost{font-size:52px;font-weight:950;color:var(--accent)}
+.compare{width:100%;border-collapse:collapse;margin-top:14px}
+.compare th,.compare td{padding:12px;border-bottom:1px solid var(--border);text-align:left}
+.compare th{color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.06em}
+.pill{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:800}
+.o1{background:var(--greenSoft);color:var(--green)} .on{background:var(--amberSoft);color:#975c00}
+.timeline{display:grid;gap:10px;margin-top:16px}
+.step{display:grid;grid-template-columns:38px 1fr;gap:10px;align-items:start}
+.stepN{width:34px;height:34px;border-radius:50%;background:var(--accentSoft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:900}
+.sliderBox{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+input[type=range]{width:min(500px,100%)}
+.bigQ{font-size:clamp(24px,3vw,36px);font-weight:900;max-width:900px}
+.resultBox{padding:14px 16px;border-radius:12px;background:#f5f7fb;border:1px solid var(--border);min-height:54px}
+.heroDiagram{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;margin-top:26px}
+.heroBlock{border:2px solid var(--border);border-radius:20px;padding:24px;text-align:center;background:#fff}
+.heroBlock strong{display:block;font-size:22px;margin-bottom:8px}
+.bigArrow{font-size:48px;color:var(--accent)}
+.sr{position:absolute;left:-9999px}
+.footerHint{margin-top:16px;color:var(--muted);font-size:13px}
+.memoryLayout{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.memoryStack{display:grid;gap:10px}
+.memCard{display:grid;grid-template-columns:90px 1fr 130px;align-items:center;gap:12px;border:2px solid var(--border);border-radius:14px;padding:12px 14px;background:#fff;transition:.45s ease}
+.memCard .addr{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--purple);font-weight:900}
+.memCard .mval{font-size:22px;font-weight:900}
+.memCard .mnext{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);text-align:right}
+.memCard.hot{border-color:var(--amber);background:var(--amberSoft);transform:translateX(5px)}
+.statePanel{display:grid;gap:8px;margin-top:12px}
+.stateRow{display:grid;grid-template-columns:110px 1fr;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff}
+.stateRow strong{color:var(--accent)}
+.unreachable{opacity:.55;border-color:var(--red)!important;background:var(--redSoft)!important}
+.workMeter{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.workBox{border:1px solid var(--border);border-radius:14px;padding:14px;background:#fff}
+.workNum{font-size:34px;font-weight:950;color:var(--accent)}
+.refDiagram{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;margin-top:18px}
+.refBox{border:2px solid var(--border);border-radius:16px;padding:18px;background:#fff;text-align:center}
+.refBox.hot{border-color:var(--amber);background:var(--amberSoft)}
+.codeLine{display:block;padding:4px 8px;border-radius:7px}
+.codeLine.active{background:#30446f;color:#fff}
+@media(max-width:800px){.memoryLayout,.workMeter,.refDiagram{grid-template-columns:1fr}.memCard{grid-template-columns:78px 1fr 110px}.refDiagram .bigArrow{transform:rotate(90deg)}}
+@media(max-width:800px){
+  .grid2,.grid3,.heroDiagram{grid-template-columns:1fr}
+  .bigArrow{transform:rotate(90deg);text-align:center}
+  .scene{min-height:auto}
+  .topbar{grid-template-columns:1fr auto}
+  .brand{grid-column:1/-1}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">ALGORITHM III · WEEK 6</div>
+    <div class="progressWrap" aria-label="Lesson progress"><div id="progress" class="progress"></div></div>
+    <div id="counter" class="counter">1 / 21</div>
+  </div>
+
+  <main id="deck" class="deck">
+
+    <section class="scene active" data-title="Opening">
+      <div class="eyebrow">Discovery lesson</div>
+      <h1>From Dynamic Array Pain to Singly Linked List</h1>
+      <p class="lede">Feel the array's limits first. Then discover why links solve a different class of problems.</p>
+      <div class="heroDiagram">
+        <div class="heroBlock">
+          <strong>Dynamic Array</strong>
+          <div class="arrayRow" style="justify-content:center">
+            <div class="cell"><div class="v">10</div><div class="i">0</div></div>
+            <div class="cell"><div class="v">20</div><div class="i">1</div></div>
+            <div class="cell"><div class="v">30</div><div class="i">2</div></div>
+          </div>
+          <p class="small" style="margin-top:14px">Order lives in adjacent positions.</p>
+        </div>
+        <div class="bigArrow">→</div>
+        <div class="heroBlock">
+          <strong>Singly Linked List</strong>
+          <div class="listRow" style="justify-content:center">
+            <span>HEAD</span><span class="arrow">→</span>
+            <div class="node"><div class="value">10</div><div class="next">•</div></div><span class="arrow">→</span>
+            <div class="node"><div class="value">20</div><div class="next">•</div></div><span class="arrow">→</span>
+            <span>NULL</span>
+          </div>
+          <p class="small" style="margin-top:14px">Order lives in links.</p>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:22px"><strong>Flow:</strong> Problem → Question → Solution</div>
+    </section>
+
+    <section class="scene" data-title="Array strengths">
+      <div class="eyebrow">01 · The Array We Already Know</div>
+      <h2>What Dynamic Arrays Already Solved</h2>
+      <p class="lede">A dynamic array manages one contiguous block with a logical size and spare capacity.</p>
+      <div class="visualStage">
+        <div class="arrayRow">
+          <div class="cell"><div class="v">10</div><div class="i">0</div></div>
+          <div class="cell"><div class="v">20</div><div class="i">1</div></div>
+          <div class="cell"><div class="v">30</div><div class="i">2</div></div>
+          <div class="cell empty"><div class="v">—</div><div class="i">3</div></div>
+          <div class="cell empty"><div class="v">—</div><div class="i">4</div></div>
+        </div>
+        <p class="small" style="margin-top:12px">size = 3 · capacity = 5</p>
+      </div>
+      <div class="grid3" style="margin-top:16px">
+        <div class="card"><div class="kpi">O(1)</div><h3>Direct index access</h3><p class="small">Jump to data[i] by address arithmetic.</p></div>
+        <div class="card"><div class="kpi">Compact</div><h3>Contiguous memory</h3><p class="small">Good cache locality.</p></div>
+        <div class="card"><div class="kpi">O(1)*</div><h3>Fast end appends</h3><p class="small">Amortized while capacity management averages out.</p></div>
+      </div>
+    </section>
+
+    <section class="scene" data-title="Prediction">
+      <div class="eyebrow">01 · Predict First</div>
+      <h2>A Changing Queue-Like List</h2>
+      <p class="lede">New urgent values may arrive at the front. Old values may leave from the front or middle.</p>
+      <div class="visualStage">
+        <div class="arrayRow">
+          <div class="cell"><div class="v">10</div><div class="i">0</div></div>
+          <div class="cell"><div class="v">20</div><div class="i">1</div></div>
+          <div class="cell"><div class="v">30</div><div class="i">2</div></div>
+          <div class="cell"><div class="v">40</div><div class="i">3</div></div>
+        </div>
+        <p class="small" style="margin-top:12px">Current state: FULL</p>
+      </div>
+      <p class="bigQ">Which operations become expensive or risky?</p>
+      <div class="quizOpts" id="predictOps">
+        <button class="choice" data-msg="Front insertion forces later elements to shift.">Insert 5 before 10</button>
+        <button class="choice" data-msg="Deleting 20 leaves a gap that later elements must close.">Delete 20</button>
+        <button class="choice" data-msg="A full array may need a new memory block.">Grow when full</button>
+        <button class="choice" data-msg="A failed resize must preserve the old valid state.">Preserve values on resize failure</button>
+      </div>
+      <div id="predictFeedback" class="quizFeedback">Click each concern to reveal why it matters.</div>
+    </section>
+
+    <section class="scene" data-title="Front insertion">
+      <div class="eyebrow">02 · Where Arrays Start to Hurt</div>
+      <h2>Front Insertion Shifts Everything</h2>
+      <p class="lede">Insert 5 at index 0 into [10, 20, 30, 40].</p>
+      <div class="sliderBox">
+        <button id="frontPlay" class="btn amber">Play shifts</button>
+        <button id="frontReset" class="btn">Reset</button>
+        <span id="frontStepLabel" class="badge">Ready</span>
+      </div>
+      <div class="visualStage"><div id="frontArray" class="arrayRow"></div></div>
+      <div class="callout amber"><strong>Think:</strong> If the array holds 1,000 values, about how many values may move?</div>
+      <div id="frontCost" class="resultBox" style="margin-top:12px">Run the animation, then decide the complexity.</div>
+      <div class="quizOpts">
+        <button class="choice costChoice" data-target="frontCost" data-correct="false">O(1)</button>
+        <button class="choice costChoice" data-target="frontCost" data-correct="false">O(log n)</button>
+        <button class="choice costChoice" data-target="frontCost" data-correct="true">O(n)</button>
+      </div>
+    </section>
+
+    <section class="scene" data-title="Deletion and resize">
+      <div class="eyebrow">02 · Where Arrays Start to Hurt</div>
+      <h2>Deletion Closes Gaps · Growth May Move Everything</h2>
+      <div class="grid2">
+        <div class="card">
+          <h3>Delete 20</h3>
+          <div class="visualStage" style="margin-top:10px"><div id="deleteArray" class="arrayRow"></div></div>
+          <div class="controls">
+            <button id="deletePlay" class="btn red">Delete 20</button>
+            <button id="deleteReset" class="btn">Reset</button>
+          </div>
+          <p id="deleteText" class="small" style="margin-top:10px">30 and 40 must move left to preserve adjacency.</p>
+        </div>
+        <div class="card">
+          <h3>Grow when full</h3>
+          <div class="visualStage" style="margin-top:10px">
+            <div id="resizeOld" class="arrayRow"></div>
+            <div style="height:14px"></div>
+            <div id="resizeNew" class="arrayRow"></div>
+          </div>
+          <div class="controls">
+            <button id="resizePlay" class="btn primary">Resize 4 → 8</button>
+            <button id="resizeReset" class="btn">Reset</button>
+          </div>
+          <p id="resizeText" class="small" style="margin-top:10px">A new block may be allocated and every old value copied.</p>
+        </div>
+      </div>
+      <div class="callout red" style="margin-top:16px"><strong>Failure preservation:</strong> if allocation fails, pointer, values, size, and capacity must stay unchanged.</div>
+    </section>
+
+    <section class="scene" data-title="Cost recap">
+      <div class="eyebrow">02 · Cost Recap</div>
+      <h2>Can You Classify the Operations?</h2>
+      <p class="lede">Choose a complexity for each operation.</p>
+      <div id="costTable"></div>
+      <div id="costSummary" class="quizFeedback"></div>
+    </section>
+
+    <section class="scene" data-title="Representation reveal">
+      <div class="eyebrow">03 · A New Way to Hold Order</div>
+      <h2>The Design Question</h2>
+      <p class="bigQ">What if values did not need to stay physically adjacent?</p>
+      <div class="heroDiagram">
+        <div class="heroBlock">
+          <strong>Positions</strong>
+          <div class="arrayRow" style="justify-content:center">
+            <div class="cell"><div class="v">10</div></div>
+            <div class="cell"><div class="v">20</div></div>
+            <div class="cell"><div class="v">30</div></div>
+          </div>
+        </div>
+        <div class="bigArrow">→</div>
+        <div class="heroBlock">
+          <strong>Links</strong>
+          <div class="listRow" style="justify-content:center">
+            <div class="node"><div class="value">10</div><div class="next">•</div></div><span class="arrow">→</span>
+            <div class="node"><div class="value">20</div><div class="next">•</div></div><span class="arrow">→</span>
+            <div class="node"><div class="value">30</div><div class="next">•</div></div><span class="arrow">→</span><span>NULL</span>
+          </div>
+        </div>
+      </div>
+      <div class="callout green" style="margin-top:20px"><strong>Discovery:</strong> “If each value knows where the next value is, the nodes do not need to sit side by side.”</div>
+    </section>
+
+    <section class="scene" data-title="Physical vs logical memory">
+      <div class="eyebrow">03 · Physical Memory vs Logical Order</div>
+      <h2>The Nodes Can Move in Memory Without Changing the List</h2>
+      <p class="lede">Logical order comes from stored addresses, not from which node happens to sit beside another in RAM.</p>
+      <div class="memoryLayout">
+        <div class="card">
+          <h3>Physical memory</h3>
+          <p class="small">These rows represent separately allocated nodes at different addresses.</p>
+          <div id="physicalMemory" class="memoryStack"></div>
+          <div class="controls">
+            <button id="shuffleMemory" class="btn primary">Shuffle physical layout</button>
+            <button id="resetMemory" class="btn">Reset</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Logical list</h3>
+          <p class="small">The chain stays 10 → 20 → 30 because each next field still stores the same destination address.</p>
+          <div class="visualStage">
+            <div class="listRow">
+              <span><strong>HEAD</strong></span><span class="arrow">→</span>
+              <div class="node"><div class="value">10</div><div class="next">•</div></div><span class="arrow">→</span>
+              <div class="node"><div class="value">20</div><div class="next">•</div></div><span class="arrow">→</span>
+              <div class="node"><div class="value">30</div><div class="next">•</div></div><span class="arrow">→</span><strong>NULL</strong>
+            </div>
+          </div>
+          <div id="memoryMessage" class="resultBox" aria-live="polite">Try shuffling the physical rows. The logical order should not change.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" data-title="Node anatomy">
+      <div class="eyebrow">03 · One Node Stores a Value and a Pointer</div>
+      <h2>Build a Node</h2>
+      <div class="grid2">
+        <div class="card">
+          <div class="listRow" style="justify-content:center;margin:26px 0">
+            <div class="node" style="transform:scale(1.35)">
+              <div class="value">10</div><div class="next">•</div>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="callout"><strong>value</strong><br><span class="small">the data</span></div>
+            <div class="callout amber"><strong>next</strong><br><span class="small">pointer to another Node</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="code">typedef struct Node {
+    int value;
+    struct Node *next;
+} Node;
+
+Node *head = NULL;</div>
+          <div class="callout" style="margin-top:14px"><strong>Why a pointer?</strong> A direct <code>Node next</code> would recursively contain another whole node forever. <code>Node *next</code> stores only an address.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" data-title="Invariant">
+      <div class="eyebrow">03 · What Makes a Linked List Valid</div>
+      <h2>Correctness Depends on Reachability</h2>
+      <div class="visualStage">
+        <div class="listRow">
+          <span><strong>HEAD</strong></span><span class="arrow">→</span>
+          <div class="node"><div class="value">10</div><div class="next">•</div></div><span class="arrow">→</span>
+          <div class="node"><div class="value">20</div><div class="next">•</div></div><span class="arrow">→</span>
+          <div class="node"><div class="value">30</div><div class="next">•</div></div><span class="arrow">→</span>
+          <span><strong>NULL</strong></span>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:16px"><strong>Invariant:</strong> head == NULL, or head starts a finite chain of valid, reachable nodes that ends in NULL.</div>
+      <p class="bigQ" style="margin-top:20px">If a node exists in memory but nothing points to it, is it still part of the list?</p>
+      <div class="quizOpts" id="reachQuiz">
+        <button class="choice" data-ok="0">Yes</button>
+        <button class="choice" data-ok="1">No</button>
+      </div>
+      <div id="reachFeedback" class="quizFeedback"></div>
+    </section>
+
+    <section class="scene" data-title="What HEAD means">
+      <div class="eyebrow">03 · HEAD Is an Entry Pointer</div>
+      <h2>HEAD Is Not the Whole List</h2>
+      <p class="lede"><code>head</code> stores one address: the first node from which the rest of the chain is reachable.</p>
+      <div class="controls">
+        <button id="advanceHead" class="btn amber">Run: head = head-&gt;next</button>
+        <button id="resetHead" class="btn">Reset</button>
+      </div>
+      <div class="visualStage"><div id="headDemo" class="listRow"></div></div>
+      <div id="headMessage" class="resultBox" aria-live="polite">HEAD currently points to node 10, so 10, 20, and 30 are reachable.</div>
+      <div class="callout red" style="margin-top:14px"><strong>Important:</strong> changing <code>head</code> changes the entry point. A still-allocated node can become unreachable from the list.</div>
+    </section>
+
+    <section class="scene" data-title="Traversal">
+      <div class="eyebrow">04 · Operations, One Pointer at a Time</div>
+      <h2>Traversal: Visiting Every Node</h2>
+      <p class="lede">A list has no data[i]. To reach a value, follow links from head one at a time.</p>
+      <div class="controls">
+        <button id="travStep" class="btn primary">Step</button>
+        <button id="travAuto" class="btn">Auto</button>
+        <button id="travReset" class="btn">Reset</button>
+      </div>
+      <div class="visualStage"><div id="travList" class="listRow"></div></div>
+      <div id="travText" class="resultBox">current = head</div>
+      <div class="callout amber" style="margin-top:14px"><strong>Check yourself:</strong> current moves through the list, but head never changes. Why does that matter?</div>
+    </section>
+
+    <section class="scene" data-title="Search vs relink">
+      <div class="eyebrow">04 · Separate Finding from Changing</div>
+      <h2>O(1) Relinking Does Not Make the Whole Operation O(1)</h2>
+      <p class="lede">Insert 25 after node 30. Compare the cost when you must first find 30 versus when you already have its pointer.</p>
+      <div class="controls">
+        <button id="searchStep" class="btn primary">Find 30: next step</button>
+        <button id="knownPointer" class="btn green">Already have pointer to 30</button>
+        <button id="searchReset" class="btn">Reset</button>
+      </div>
+      <div class="visualStage"><div id="searchList" class="listRow"></div></div>
+      <div id="searchMessage" class="resultBox" aria-live="polite">Mode A: start at HEAD and find node 30 before inserting 25.</div>
+      <div class="workMeter">
+        <div class="workBox"><div id="searchCount" class="workNum">0</div><strong>nodes inspected</strong><div class="small">search work</div></div>
+        <div class="workBox"><div id="relinkCount" class="workNum">0</div><strong>pointer relinks</strong><div class="small">structural change</div></div>
+      </div>
+      <div class="callout" style="margin-top:14px"><strong>Key distinction:</strong> find by value/position can be O(n); once the target node is already known, the local relink can be O(1).</div>
+    </section>
+
+    <section class="scene" data-title="Insert front">
+      <div class="eyebrow">04 · Insert at the Front</div>
+      <h2>One Relink Replaces an Entire Shift</h2>
+      <p class="lede">Start with head → 20 → 30 → NULL. Insert 10 at the front.</p>
+      <div class="controls">
+        <button id="insFrontStep" class="btn green">Next pointer step</button>
+        <button id="insFrontReset" class="btn">Reset</button>
+      </div>
+      <div class="visualStage"><div id="insFrontList" class="listRow"></div></div>
+      <div id="insFrontText" class="resultBox">Create newNode(10).</div>
+      <div class="grid2" style="margin-top:14px">
+        <div class="callout green"><strong>Correct order</strong><br>1) newNode->next = head<br>2) head = newNode</div>
+        <div class="callout red"><strong>Why order matters</strong><br>If head changes first, the old chain can be lost.</div>
+      </div>
+    </section>
+
+    <section class="scene" data-title="Why Node double pointer">
+      <div class="eyebrow">04 · Why Functions Receive Node **head</div>
+      <h2>To Change the Caller's HEAD, the Function Needs Its Address</h2>
+      <p class="lede">A function can modify nodes through a <code>Node *</code>, but changing the caller's head variable itself requires a pointer to that pointer.</p>
+      <div class="refDiagram">
+        <div id="callerHeadBox" class="refBox">
+          <div class="badge">main()</div>
+          <h3 style="margin-top:10px">head</h3>
+          <div id="callerHeadValue" class="kpi">20</div>
+          <div class="small">points to first node</div>
+        </div>
+        <div class="bigArrow">↔</div>
+        <div id="functionHeadBox" class="refBox">
+          <div class="badge">insertFront(Node **head, ...)</div>
+          <h3 style="margin-top:10px">*head</h3>
+          <div id="functionHeadValue" class="kpi">20</div>
+          <div class="small">refers to main's head variable</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="localHeadChange" class="btn amber">Try changing only a local Node *</button>
+        <button id="doubleHeadChange" class="btn green">Run: *head = newNode</button>
+        <button id="doubleHeadReset" class="btn">Reset</button>
+      </div>
+      <div id="doubleHeadMessage" class="resultBox" aria-live="polite">Before the call, main's head points to node 20.</div>
+      <div class="code" style="margin-top:14px">void insertFront(Node **head, int val) {
+    Node *newNode = malloc(sizeof(Node));
+    newNode->value = val;
+    newNode->next = *head;
+    *head = newNode;   // changes the caller's head
+}</div>
+    </section>
+
+    <section class="scene" data-title="Insert end">
+      <div class="eyebrow">04 · Insert at the End</div>
+      <h2>Without a Tail Pointer, Finding the End Costs O(n)</h2>
+      <div class="controls">
+        <button id="endStep" class="btn primary">Walk one node</button>
+        <button id="endReset" class="btn">Reset</button>
+      </div>
+      <div class="visualStage"><div id="endList" class="listRow"></div></div>
+      <div id="endText" class="resultBox">current = head. Find the node whose next is NULL.</div>
+      <div class="callout" style="margin-top:14px"><strong>Extension:</strong> a tail pointer would make end insertion O(1).</div>
+    </section>
+
+    <section class="scene" data-title="Pointer state trace">
+      <div class="eyebrow">04 · Trace the Pointers, Not Just the Values</div>
+      <h2>Watch HEAD, PREVIOUS, and CURRENT as Search Advances</h2>
+      <p class="lede">Target = 30. The data values do not move; only the pointer variables change what they reference.</p>
+      <div class="grid2">
+        <div>
+          <div class="controls">
+            <button id="ptrTraceStep" class="btn primary">Execute next loop step</button>
+            <button id="ptrTraceReset" class="btn">Reset</button>
+          </div>
+          <div class="visualStage"><div id="ptrTraceList" class="listRow"></div></div>
+          <div id="ptrTraceMessage" class="resultBox" aria-live="polite">Initial state: previous = NULL; current = head.</div>
+        </div>
+        <div>
+          <div id="ptrTraceCode" class="code"><span class="codeLine" data-line="0">previous = NULL;</span>
+<span class="codeLine" data-line="0">current = head;</span>
+<span class="codeLine" data-line="1">while (current &amp;&amp; current-&gt;value != target) {</span>
+<span class="codeLine" data-line="2">    previous = current;</span>
+<span class="codeLine" data-line="2">    current = current-&gt;next;</span>
+<span class="codeLine" data-line="3">}</span></div>
+          <div id="ptrStatePanel" class="statePanel"></div>
+        </div>
+      </div>
+      <div class="callout amber" style="margin-top:14px"><strong>Mental model:</strong> HEAD stays anchored while CURRENT walks and PREVIOUS follows one node behind.</div>
+    </section>
+
+    <section class="scene" data-title="Delete node">
+      <div class="eyebrow">04 · Delete a Node</div>
+      <h2>Search → Relink → Free</h2>
+      <p class="lede">Delete 20 from head → 10 → 20 → 30 → NULL.</p>
+      <div class="controls">
+        <button id="delNodeStep" class="btn red">Next deletion step</button>
+        <button id="delNodeReset" class="btn">Reset</button>
+      </div>
+      <div class="visualStage"><div id="delNodeList" class="listRow"></div></div>
+      <div id="delNodeText" class="resultBox">previous = NULL; current = head</div>
+      <div class="timeline">
+        <div class="step"><div class="stepN">1</div><div>Find <strong>previous</strong> and <strong>current</strong>.</div></div>
+        <div class="step"><div class="stepN">2</div><div>Relink <strong>previous->next = current->next</strong>.</div></div>
+        <div class="step"><div class="stepN">3</div><div><strong>free(current)</strong>.</div></div>
+        <div class="step"><div class="stepN">4</div><div>Never read <strong>current</strong> again.</div></div>
+      </div>
+    </section>
+
+    <section class="scene" data-title="Free whole list">
+      <div class="eyebrow">04 · Free the Whole List</div>
+      <h2>Save the Link Before You Free the Node</h2>
+      <div class="controls">
+        <button id="freeStep" class="btn red">Free next node</button>
+        <button id="freeReset" class="btn">Reset</button>
+      </div>
+      <div class="visualStage"><div id="freeList" class="listRow"></div></div>
+      <div id="freeText" class="resultBox">current = head. First save next = current->next.</div>
+      <div class="callout red" style="margin-top:14px"><strong>Common bug:</strong> once current is freed, reading current->next is undefined behavior.</div>
+    </section>
+
+    <section class="scene" data-title="Choosing">
+      <div class="eyebrow">05 · Choosing and Practicing</div>
+      <h2>Array vs. List: Choose by Operation</h2>
+      <table class="compare">
+        <thead><tr><th>Operation</th><th>Dynamic Array</th><th>Singly Linked List</th></tr></thead>
+        <tbody>
+          <tr><td>Access by index</td><td><span class="pill o1">O(1)</span> direct</td><td><span class="pill on">O(n)</span> traversal</td></tr>
+          <tr><td>Insert at front</td><td><span class="pill on">O(n)</span> shift</td><td><span class="pill o1">O(1)</span> relink</td></tr>
+          <tr><td>Insert at end</td><td><span class="pill o1">O(1) amortized</span></td><td><span class="pill on">O(n)</span> without tail</td></tr>
+          <tr><td>Delete at front</td><td><span class="pill on">O(n)</span> shift</td><td><span class="pill o1">O(1)</span> relink</td></tr>
+          <tr><td>Memory layout</td><td>one contiguous block</td><td>one allocation per node</td></tr>
+          <tr><td>Cleanup</td><td>free one block</td><td>free every reachable node</td></tr>
+        </tbody>
+      </table>
+      <div class="callout green" style="margin-top:18px"><strong>Main idea:</strong> a structure earns its place by the operations it makes cheap.</div>
+    </section>
+
+    <section class="scene" data-title="Exit ticket">
+      <div class="eyebrow">05 · Exit Ticket</div>
+      <h2>Prove the Advantage</h2>
+      <div class="grid2">
+        <div class="card">
+          <h3>Task A — Dynamic Array</h3>
+          <p>Start: [20, 30, 40, _, _]. Insert 10 at the front.</p>
+          <div class="visualStage"><div id="exitArray" class="arrayRow"></div></div>
+          <button id="exitArrayPlay" class="btn amber">Show shifts</button>
+          <div id="exitArrayText" class="quizFeedback"></div>
+        </div>
+        <div class="card">
+          <h3>Task B — Singly Linked List</h3>
+          <p>Start: head → 20 → 30 → 40 → NULL. Insert 10 at the front.</p>
+          <div class="visualStage"><div id="exitList" class="listRow"></div></div>
+          <button id="exitListPlay" class="btn green">Show two assignments</button>
+          <div id="exitListText" class="quizFeedback"></div>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:18px">
+        <strong>Submit:</strong> dynamic-array trace · linked-list diagram · exact pointer assignment order · invariant after insertion · complexity comparison
+      </div>
+      <p class="bigQ" style="margin-top:20px">What did we discover?</p>
+      <div class="resultBox">A singly linked list avoids front-shifting because order lives in links between nodes, not in adjacent array positions.</div>
+      <p class="small" style="margin-top:14px">Next: doubly linked lists and tail pointers.</p>
+      <div class="controls" style="margin-top:18px">
+        <a class="btn primary" href="page2.html" style="text-decoration:none">Start 60-question Practice Lab →</a>
+      </div>
+      <p class="small">The practice link works when both HTML files are kept in the same folder.</p>
+    </section>
+
+  </main>
+
+  <div class="nav">
+    <button id="prev" class="btn">← Previous</button>
+    <button id="next" class="btn primary">Next →</button>
+  </div>
+  <div class="footerHint">Keyboard: ← / → to navigate. Activities keep local state until reset.</div>
+</div>
+
+<script>
+(() => {
+  const scenes=[...document.querySelectorAll('.scene')];
+  let index=0;
+  const progress=document.getElementById('progress');
+  const counter=document.getElementById('counter');
+  const prev=document.getElementById('prev');
+  const next=document.getElementById('next');
+
+  function show(i){
+    index=Math.max(0,Math.min(scenes.length-1,i));
+    scenes.forEach((s,j)=>s.classList.toggle('active',j===index));
+    progress.style.width=((index+1)/scenes.length*100)+'%';
+    counter.textContent=(index+1)+' / '+scenes.length;
+    prev.disabled=index===0; next.disabled=index===scenes.length-1;
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  prev.addEventListener('click',()=>show(index-1));
+  next.addEventListener('click',()=>show(index+1));
+  document.addEventListener('keydown',e=>{
+    const tag=(e.target.tagName||'').toLowerCase();
+    if(['input','textarea','select'].includes(tag)) return;
+    if(e.key==='ArrowRight') show(index+1);
+    if(e.key==='ArrowLeft') show(index-1);
+  });
+
+  const arrayHTML=(vals,opts={})=>{
+    const cap=opts.capacity ?? vals.length;
+    let out='';
+    for(let i=0;i<cap;i++){
+      const v=i<vals.length?vals[i]:null;
+      let cls='cell';
+      if(v===null || v===undefined || v==='') cls+=' empty';
+      if(opts.hotIndex===i) cls+=' hot';
+      if(opts.staleIndex===i) cls+=' stale';
+      out+=`<div class="${cls}"><div class="v">${v===null||v===undefined||v===''?'—':v}</div>${opts.indices===false?'':`<div class="i">${i}</div>`}</div>`;
+    }
+    return out;
+  };
+
+  const listHTML=(vals,opts={})=>{
+    let out=opts.showHead===false?'':`<span><strong>HEAD</strong></span><span class="arrow ${opts.hotArrow===-1?'hot':''}">→</span>`;
+    vals.forEach((v,i)=>{
+      let cls='node';
+      if(opts.hot===i) cls+=' hot';
+      if(opts.newIndex===i) cls+=' new';
+      if(opts.dead===i) cls+=' dead';
+      const ptrs=[];
+      if(opts.current===i) ptrs.push('CURRENT');
+      if(opts.previous===i) ptrs.push('PREVIOUS');
+      if(opts.newPtr===i) ptrs.push('NEW');
+      out+=`<div><div class="ptr">${ptrs.join(' · ')}</div><div class="${cls}"><div class="value">${v}</div><div class="next">•</div></div></div>`;
+      out+=`<span class="arrow ${opts.hotArrow===i?'hot':''}">→</span>`;
+    });
+    out+=`<span><strong>NULL</strong></span>`;
+    return out;
+  };
+
+  // prediction
+  document.querySelectorAll('#predictOps .choice').forEach(b=>b.addEventListener('click',()=>{
+    b.classList.add('correct');
+    document.getElementById('predictFeedback').textContent=b.dataset.msg;
+  }));
+
+  // front insertion
+  let frontTimer=null;
+  const frontEl=document.getElementById('frontArray');
+  const frontLabel=document.getElementById('frontStepLabel');
+  const frontCost=document.getElementById('frontCost');
+  function resetFront(){
+    if(frontTimer) clearInterval(frontTimer);
+    frontTimer=null;
+    frontEl.innerHTML=arrayHTML([10,20,30,40],{capacity:5});
+    frontLabel.textContent='Ready'; frontCost.textContent='Run the animation, then decide the complexity.';
+  }
+  resetFront();
+  document.getElementById('frontReset').addEventListener('click',resetFront);
+  document.getElementById('frontPlay').addEventListener('click',()=>{
+    resetFront();
+    const frames=[
+      {vals:[10,20,30,40,40],hotIndex:4,label:'Move 40 → index 4'},
+      {vals:[10,20,30,30,40],hotIndex:3,label:'Move 30 → index 3'},
+      {vals:[10,20,20,30,40],hotIndex:2,label:'Move 20 → index 2'},
+      {vals:[10,10,20,30,40],hotIndex:1,label:'Move 10 → index 1'},
+      {vals:[5,10,20,30,40],hotIndex:0,label:'Write 5 at index 0'}
+    ];
+    let k=0;
+    const play=()=>{const f=frames[k];frontEl.innerHTML=arrayHTML(f.vals,{capacity:5,hotIndex:f.hotIndex});frontLabel.textContent=f.label;k++;if(k>=frames.length){clearInterval(frontTimer);frontTimer=null;frontCost.textContent='Every existing value moved once. Cost grows with n.'}};
+    play(); frontTimer=setInterval(play,650);
+  });
+  document.querySelectorAll('.costChoice').forEach(b=>b.addEventListener('click',()=>{
+    const box=document.getElementById(b.dataset.target);
+    document.querySelectorAll(`.costChoice[data-target="${b.dataset.target}"]`).forEach(x=>x.classList.remove('correct','wrong'));
+    if(b.dataset.correct==='true'){b.classList.add('correct');box.innerHTML='<strong>Correct: O(n).</strong> Front insertion may shift every existing element.'}
+    else{b.classList.add('wrong');box.innerHTML='<strong>Try again.</strong> The number of moved elements grows with the array size.'}
+  }));
+
+  // delete array
+  const deleteArray=document.getElementById('deleteArray');
+  const deleteText=document.getElementById('deleteText');
+  function resetDelete(){deleteArray.innerHTML=arrayHTML([10,20,30,40],{capacity:4});deleteText.textContent='30 and 40 must move left to preserve adjacency.'}
+  resetDelete();
+  document.getElementById('deleteReset').addEventListener('click',resetDelete);
+  document.getElementById('deletePlay').addEventListener('click',()=>{
+    deleteArray.innerHTML=arrayHTML([10,30,40,40],{capacity:4,staleIndex:3});
+    deleteText.innerHTML='After shifting: logical size = 3. Slot [3] still contains a stale 40, but operations must ignore it.';
+  });
+
+  // resize
+  const resizeOld=document.getElementById('resizeOld'),resizeNew=document.getElementById('resizeNew'),resizeText=document.getElementById('resizeText');
+  function resetResize(){resizeOld.innerHTML=arrayHTML([10,20,30,40],{capacity:4});resizeNew.innerHTML='';resizeText.textContent='A new block may be allocated and every old value copied.'}
+  resetResize();
+  document.getElementById('resizeReset').addEventListener('click',resetResize);
+  document.getElementById('resizePlay').addEventListener('click',()=>{
+    resizeNew.innerHTML=arrayHTML([10,20,30,40],{capacity:8});
+    resizeText.innerHTML='New capacity = 8. All four values were copied to a new contiguous block: <strong>O(n)</strong> for that resize.';
+  });
+
+  // complexity recap
+  const ops=[
+    ['Access by index','O(1)','Direct address arithmetic from the base pointer'],
+    ['Append at end','O(1) amortized','Free capacity absorbs most writes; occasional resize averages out'],
+    ['Insert/delete at front','O(n)','Later values shift to keep the block contiguous'],
+    ['Grow past capacity','O(n)','Allocate a new block and copy every value']
+  ];
+  const costTable=document.getElementById('costTable');
+  costTable.innerHTML=ops.map((o,i)=>`<div class="card" style="margin-bottom:10px"><div class="grid2"><div><strong>${o[0]}</strong><div class="small">${o[2]}</div></div><div class="quizOpts" data-op="${i}"><button class="choice">O(1)</button><button class="choice">O(1) amortized</button><button class="choice">O(n)</button></div></div></div>`).join('');
+  let costCorrect=0;
+  document.querySelectorAll('#costTable .quizOpts').forEach(group=>{
+    const i=+group.dataset.op;
+    group.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+      group.querySelectorAll('button').forEach(x=>x.classList.remove('correct','wrong'));
+      if(b.textContent===ops[i][1]){
+        if(!group.dataset.solved){group.dataset.solved='1';costCorrect++}
+        b.classList.add('correct');
+      }else b.classList.add('wrong');
+      document.getElementById('costSummary').textContent=costCorrect===ops.length?'Excellent — all four classified correctly.':`${costCorrect} / ${ops.length} correct`;
+    }));
+  });
+
+  // reachability
+  document.querySelectorAll('#reachQuiz .choice').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('#reachQuiz .choice').forEach(x=>x.classList.remove('correct','wrong'));
+    const ok=b.dataset.ok==='1';
+    b.classList.add(ok?'correct':'wrong');
+    document.getElementById('reachFeedback').textContent=ok?'Correct. Membership is defined by reachability from head.':'Not quite. A node with no incoming path from head is unreachable, so it is not part of the list.';
+  }));
+
+  // traversal
+  const travList=document.getElementById('travList'),travText=document.getElementById('travText');
+  let travIndex=0,travTimer=null;
+  function renderTrav(){
+    if(travIndex<4){
+      travList.innerHTML=listHTML([10,20,30,40],{current:travIndex,hot:travIndex});
+      travText.textContent=`current points to ${[10,20,30,40][travIndex]}. Visit it, then current = current->next.`;
+    }else{
+      travList.innerHTML=listHTML([10,20,30,40],{});
+      travText.innerHTML='current = NULL. Traversal is complete: <strong>O(n)</strong>.';
+    }
+  }
+  function resetTrav(){if(travTimer)clearInterval(travTimer);travTimer=null;travIndex=0;renderTrav()}
+  resetTrav();
+  document.getElementById('travReset').addEventListener('click',resetTrav);
+  document.getElementById('travStep').addEventListener('click',()=>{if(travIndex<4)travIndex++;renderTrav()});
+  document.getElementById('travAuto').addEventListener('click',()=>{
+    resetTrav();travTimer=setInterval(()=>{if(travIndex>=4){clearInterval(travTimer);travTimer=null;return}travIndex++;renderTrav()},650);
+  });
+
+  // insert front
+  const insFrontList=document.getElementById('insFrontList'),insFrontText=document.getElementById('insFrontText');
+  let insFrontStep=0;
+  function renderInsFront(){
+    if(insFrontStep===0){insFrontList.innerHTML=`<div><div class="ptr">NEW</div><div class="node new"><div class="value">10</div><div class="next">•</div></div></div><span style="width:26px"></span>`+listHTML([20,30]);insFrontText.textContent='Create newNode(10).'}
+    if(insFrontStep===1){insFrontList.innerHTML=`<div><div class="ptr">NEW</div><div class="node new"><div class="value">10</div><div class="next">•</div></div></div><span class="arrow hot">↘</span>`+listHTML([20,30]);insFrontText.innerHTML='<strong>Step 1:</strong> newNode->next = head. The old list is still reachable.'}
+    if(insFrontStep>=2){insFrontList.innerHTML=listHTML([10,20,30],{newIndex:0,hot:0});insFrontText.innerHTML='<strong>Step 2:</strong> head = newNode. Front insertion is <strong>O(1)</strong>.'}
+  }
+  function resetInsFront(){insFrontStep=0;renderInsFront()}
+  resetInsFront();
+  document.getElementById('insFrontReset').addEventListener('click',resetInsFront);
+  document.getElementById('insFrontStep').addEventListener('click',()=>{insFrontStep=Math.min(2,insFrontStep+1);renderInsFront()});
+
+  // insert end
+  const endList=document.getElementById('endList'),endText=document.getElementById('endText');
+  let endIdx=0;
+  function renderEnd(){
+    const vals=[10,20,30];
+    if(endIdx<3){endList.innerHTML=listHTML(vals,{current:endIdx,hot:endIdx});endText.textContent=`At ${vals[endIdx]}. ${endIdx===2?'Its next is NULL — this is the end.':'next is not NULL, so keep walking.'}`}
+    else{endList.innerHTML=listHTML([10,20,30,40],{newIndex:3});endText.innerHTML='Attach newNode(40) after the last node. Search dominated the cost: <strong>O(n)</strong> without a tail pointer.'}
+  }
+  function resetEnd(){endIdx=0;renderEnd()}
+  resetEnd();
+  document.getElementById('endReset').addEventListener('click',resetEnd);
+  document.getElementById('endStep').addEventListener('click',()=>{endIdx=Math.min(3,endIdx+1);renderEnd()});
+
+  // delete node
+  const delNodeList=document.getElementById('delNodeList'),delNodeText=document.getElementById('delNodeText');
+  let delStep=0;
+  function renderDelNode(){
+    if(delStep===0){delNodeList.innerHTML=listHTML([10,20,30],{current:0});delNodeText.textContent='previous = NULL; current = head'}
+    if(delStep===1){delNodeList.innerHTML=listHTML([10,20,30],{previous:0,current:1,hot:1});delNodeText.textContent='Found target 20. previous = 10; current = 20.'}
+    if(delStep===2){delNodeList.innerHTML=listHTML([10,20,30],{previous:0,current:1,dead:1,hotArrow:0});delNodeText.innerHTML='Relink: <strong>previous->next = current->next</strong>. Node 20 is bypassed.'}
+    if(delStep>=3){delNodeList.innerHTML=listHTML([10,30],{previous:0});delNodeText.innerHTML='<strong>free(current)</strong>. Never read current again.'}
+  }
+  function resetDelNode(){delStep=0;renderDelNode()}
+  resetDelNode();
+  document.getElementById('delNodeReset').addEventListener('click',resetDelNode);
+  document.getElementById('delNodeStep').addEventListener('click',()=>{delStep=Math.min(3,delStep+1);renderDelNode()});
+
+  // free whole list
+  const freeListEl=document.getElementById('freeList'),freeText=document.getElementById('freeText');
+  let freeVals=[10,20,30];
+  function renderFree(){
+    freeListEl.innerHTML=freeVals.length?listHTML(freeVals,{current:0,hot:0}):'<strong>HEAD → NULL</strong>';
+    freeText.innerHTML=freeVals.length?'Save <strong>next = current->next</strong>, then free current.':'All nodes freed. Set head = NULL.';
+  }
+  function resetFree(){freeVals=[10,20,30];renderFree()}
+  resetFree();
+  document.getElementById('freeReset').addEventListener('click',resetFree);
+  document.getElementById('freeStep').addEventListener('click',()=>{
+    if(freeVals.length){const old=freeVals[0];freeVals.shift();renderFree();freeText.innerHTML=freeVals.length?`Freed ${old}. Move current to the saved next node (${freeVals[0]}).`:`Freed ${old}. No nodes remain; head = NULL.`}
+  });
+
+  // physical vs logical memory
+  const memoryNodes={
+    10:{addr:'0xA120',next:'0xF830'},
+    20:{addr:'0xF830',next:'0x31C0'},
+    30:{addr:'0x31C0',next:'NULL'}
+  };
+  const memoryOrders=[[10,20,30],[30,10,20],[20,30,10],[10,30,20]];
+  let memoryOrderIndex=0;
+  const physicalMemory=document.getElementById('physicalMemory');
+  const memoryMessage=document.getElementById('memoryMessage');
+  function renderPhysicalMemory(){
+    const order=memoryOrders[memoryOrderIndex];
+    physicalMemory.innerHTML=order.map(v=>`<div class="memCard"><div class="addr">${memoryNodes[v].addr}</div><div class="mval">value = ${v}</div><div class="mnext">next = ${memoryNodes[v].next}</div></div>`).join('');
+  }
+  renderPhysicalMemory();
+  document.getElementById('shuffleMemory').addEventListener('click',()=>{
+    memoryOrderIndex=(memoryOrderIndex+1)%memoryOrders.length;renderPhysicalMemory();
+    memoryMessage.innerHTML='Physical placement changed, but <strong>HEAD → 10 → 20 → 30 → NULL</strong> did not. The stored addresses define logical order.';
+  });
+  document.getElementById('resetMemory').addEventListener('click',()=>{memoryOrderIndex=0;renderPhysicalMemory();memoryMessage.textContent='Try shuffling the physical rows. The logical order should not change.'});
+
+  // HEAD as entry pointer
+  const headDemo=document.getElementById('headDemo'),headMessage=document.getElementById('headMessage');
+  let headAdvanced=false;
+  function renderHeadDemo(){
+    if(!headAdvanced){
+      headDemo.innerHTML=listHTML([10,20,30],{hot:0});
+    }else{
+      headDemo.innerHTML=`<div><div class="ptr" style="color:var(--red)">UNREACHABLE FROM HEAD</div><div class="node unreachable"><div class="value">10</div><div class="next">•</div></div></div><span style="width:28px"></span>`+listHTML([20,30],{hot:0});
+    }
+  }
+  renderHeadDemo();
+  document.getElementById('advanceHead').addEventListener('click',()=>{headAdvanced=true;renderHeadDemo();headMessage.innerHTML='<code>head = head-&gt;next</code> moved the entry pointer to 20. Node 10 may still be allocated, but it is no longer reachable from head.'});
+  document.getElementById('resetHead').addEventListener('click',()=>{headAdvanced=false;renderHeadDemo();headMessage.textContent='HEAD currently points to node 10, so 10, 20, and 30 are reachable.'});
+
+  // search cost vs local relink cost
+  const searchList=document.getElementById('searchList'),searchMessage=document.getElementById('searchMessage');
+  const searchCount=document.getElementById('searchCount'),relinkCount=document.getElementById('relinkCount');
+  let searchPos=0, searchInserted=false;
+  const searchVals=[10,20,30,40];
+  function resetSearchCost(){searchPos=0;searchInserted=false;searchList.innerHTML=listHTML(searchVals,{current:0,hot:0});searchCount.textContent='0';relinkCount.textContent='0';searchMessage.textContent='Mode A: start at HEAD and find node 30 before inserting 25.'}
+  resetSearchCost();
+  document.getElementById('searchReset').addEventListener('click',resetSearchCost);
+  document.getElementById('searchStep').addEventListener('click',()=>{
+    if(searchInserted){searchMessage.textContent='Reset to replay the search-first path.';return;}
+    if(searchPos<2){
+      searchPos++; searchCount.textContent=String(searchPos+1);
+      searchList.innerHTML=listHTML(searchVals,{current:searchPos,hot:searchPos});
+      searchMessage.textContent=`Inspected ${searchVals[searchPos]}. ${searchVals[searchPos]===30?'Target found. One local relink can now insert 25.':'Not the target, follow next.'}`;
+      return;
+    }
+    searchInserted=true; searchCount.textContent='3'; relinkCount.textContent='1';
+    searchList.innerHTML=listHTML([10,20,30,25,40],{newIndex:3,hot:3});
+    searchMessage.innerHTML='Search touched 3 nodes, then the structural change took 1 local relink. <strong>Total worst-case cost: O(n)</strong> because search dominates.';
+  });
+  document.getElementById('knownPointer').addEventListener('click',()=>{
+    searchInserted=true;searchCount.textContent='0';relinkCount.textContent='1';searchList.innerHTML=listHTML([10,20,30,25,40],{newIndex:3,hot:3});
+    searchMessage.innerHTML='If <code>current</code> already points to node 30, inserting 25 after it needs only local pointer updates: <strong>O(1)</strong>.';
+  });
+
+  // Node ** head visual
+  const callerHeadValue=document.getElementById('callerHeadValue'),functionHeadValue=document.getElementById('functionHeadValue'),doubleHeadMessage=document.getElementById('doubleHeadMessage');
+  const callerHeadBox=document.getElementById('callerHeadBox'),functionHeadBox=document.getElementById('functionHeadBox');
+  function resetDoubleHead(){callerHeadValue.textContent='20';functionHeadValue.textContent='20';callerHeadBox.classList.remove('hot');functionHeadBox.classList.remove('hot');doubleHeadMessage.textContent="Before the call, main's head points to node 20."}
+  resetDoubleHead();
+  document.getElementById('doubleHeadReset').addEventListener('click',resetDoubleHead);
+  document.getElementById('localHeadChange').addEventListener('click',()=>{functionHeadValue.textContent='10';functionHeadBox.classList.add('hot');callerHeadBox.classList.remove('hot');doubleHeadMessage.innerHTML='Changing only a local <code>Node *</code> can make the local variable point to 10, while <strong>main\'s head still points to 20</strong>.'});
+  document.getElementById('doubleHeadChange').addEventListener('click',()=>{callerHeadValue.textContent='10';functionHeadValue.textContent='10';callerHeadBox.classList.add('hot');functionHeadBox.classList.add('hot');doubleHeadMessage.innerHTML='<code>*head = newNode</code> writes through the pointer-to-pointer, so the caller\'s actual head now points to node 10.'});
+
+  // pointer-state tracing
+  const ptrTraceList=document.getElementById('ptrTraceList'),ptrTraceMessage=document.getElementById('ptrTraceMessage'),ptrStatePanel=document.getElementById('ptrStatePanel');
+  let ptrTraceStepNo=0;
+  function ptrStateRow(name,value){return `<div class="stateRow"><strong>${name}</strong><span>${value}</span></div>`}
+  function renderPtrTrace(){
+    const vals=[10,20,30,40];
+    let current=0, previous=null, msg='Initial state: previous = NULL; current = head.';
+    if(ptrTraceStepNo===1){current=1;previous=0;msg='After one loop step: previous now remembers 10; current advances to 20.'}
+    if(ptrTraceStepNo>=2){current=2;previous=1;msg='After two loop steps: previous = 20; current = 30. Target found, so the loop stops.'}
+    ptrTraceList.innerHTML=listHTML(vals,{current,previous,hot:current});
+    ptrStatePanel.innerHTML=ptrStateRow('HEAD','10')+ptrStateRow('PREVIOUS',previous===null?'NULL':String(vals[previous]))+ptrStateRow('CURRENT',String(vals[current]))+ptrStateRow('TARGET','30');
+    ptrTraceMessage.textContent=msg;
+    document.querySelectorAll('#ptrTraceCode .codeLine').forEach(x=>x.classList.remove('active'));
+    const line=ptrTraceStepNo===0?'1':(ptrTraceStepNo<2?'2':'3');
+    document.querySelectorAll(`#ptrTraceCode .codeLine[data-line="${line}"]`).forEach(x=>x.classList.add('active'));
+  }
+  renderPtrTrace();
+  document.getElementById('ptrTraceReset').addEventListener('click',()=>{ptrTraceStepNo=0;renderPtrTrace()});
+  document.getElementById('ptrTraceStep').addEventListener('click',()=>{ptrTraceStepNo=Math.min(2,ptrTraceStepNo+1);renderPtrTrace()});
+
+  // exit ticket
+  const exitArray=document.getElementById('exitArray'),exitList=document.getElementById('exitList');
+  const exitArrayText=document.getElementById('exitArrayText'),exitListText=document.getElementById('exitListText');
+  exitArray.innerHTML=arrayHTML([20,30,40],{capacity:5});
+  exitList.innerHTML=listHTML([20,30,40]);
+  document.getElementById('exitArrayPlay').addEventListener('click',()=>{
+    exitArray.innerHTML=arrayHTML([10,20,30,40],{capacity:5,hotIndex:0});
+    exitArrayText.innerHTML='Shift 40, 30, 20 right, then write 10. <strong>O(n)</strong>.';
+  });
+  document.getElementById('exitListPlay').addEventListener('click',()=>{
+    exitList.innerHTML=listHTML([10,20,30,40],{newIndex:0,hot:0});
+    exitListText.innerHTML='1) newNode->next = head &nbsp; 2) head = newNode. <strong>O(1)</strong>.';
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>
